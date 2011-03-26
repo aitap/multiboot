@@ -1,0 +1,44 @@
+Welcome!
+
+This Makefile allows you to build yourself a multiboot cd with fixed amount of components:
+ - PartedMagic (http://partedmagic.com)
+ - Finnix (http://finnix.org)
+ - SystemRescueCD (http://sysresccd.org)
+ - GRUB4DOS (http://grub4dos-chenall.googlecode.com)
+ - Debian testing netinstall (http://debian.org)
+ - DamnSmallLinux (http://damnsmalllinux.org)
+
+Useful make rules:
+
+all: build live cd contents
+iso: make iso-image
+install-usb: install multi-boot compilation to usb-drive (not implemented)
+
+Useful variables:
+
+IMAGE = ./image.iso
+	where to place the final image
+
+MKISOFS = genisoimage
+	what to run to build iso image
+
+CONTENTS = ./contents/
+	where to store live cd contents
+
+DOWNLOAD = ./download/
+	where to download and uncompress files
+
+CONFIGS = ./configs/
+	where the config files are stored
+
+MOUNTPOINT = /mnt
+	where to mount iso images and usb drive
+
+MOUNT = mount
+	what to run to mount something (try `sudo mount` or `fuseiso`)
+
+UMOUNT = umount
+	whet to run to umount something (try `sudo umount` or `fusermount -u`)
+
+TARGET (unset)
+	where to install live-usb (not implemented)
