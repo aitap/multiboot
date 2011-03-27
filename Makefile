@@ -47,7 +47,7 @@ syslinux-usb: syslinux base
 	@if test -z $(TARGET); then echo '!!! You have to define TARGET!'; exit 1; fi
 	blkid -t TYPE="vfat" $(TARGET)
 	$(MOUNT) $(TARGET) $(MOUNTPOINT)
-	test -d $(MOUNTPOINT)/mnt/isolinux || mkdir -v $(MOUNTPOINT)/mnt/isolinux
+	test -d $(MOUNTPOINT)/isolinux || mkdir -v $(MOUNTPOINT)/isolinux
 	$(UMOUNT) $(MOUNTPOINT)
 	$(DOWNLOAD)/syslinux/linux/syslinux-nomtools -d isolinux -i $(TARGET)
 	@echo '??? You may want to install mbr on you USB drive'
@@ -116,6 +116,9 @@ grub4dos: grub4dos-latest
 	@echo '*** Copying configs'
 	cp -v $(CONFIGS)/grub4dos.cfg $(CONTENTS)/isolinux/
 	touch grub4dos
+
+love:
+	@echo not war
 
 debian-latest: base
 	@echo '*** Downloading: debian'

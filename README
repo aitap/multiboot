@@ -13,6 +13,7 @@ Useful make rules:
 all: build live cd contents
 iso: make iso-image
 install-usb: install multi-boot compilation to usb-drive (you'll have to define TARGET=/dev/sdXY)
+clean: self-explanatory :)
 
 Useful variables:
 
