@@ -1,0 +1,10 @@
+Kernel command line options for daemons:
+
+nossd          Do not start SSH daemon
+nobluetooth    Do not start nobluetooth daemon
+nodmeventd     Do not start device mapper event daemon
+nohal          Do not start HAL and Dbus daemons
+nosmart        Disable smartmontools daemon
+nofstabdaemon  Disable the Parted Magic /etc/fstab daemon
+nonfs          Do not start NFS daemon
+noacpid        Do not start acpi daemon

@@ -1,0 +1,25 @@
+Kernel command line options:
+acpi=off       Disable Advanced Configuration and Power Interface
+noeject        Do not eject CD
+nogpm          Disable the console mouse server
+noscsi         Disable all SCSI devices
+vga=normal     Disable the framebuffer console
+keymap=        Load keyboard map
+directory=     Directory that contains the /pmagic/ folder (default value: /)
+consoleboot    Does not start X-windows
+xvesa          Auto-start Xvesa instead of Xorg
+iso_filename=  Path to iso (iso mapping)
+iso_location=  Directory which contains the iso (iso mapping)
+uuid=          Boot device by uuid
+label=         Boot device by label
+noumount       Do not umount Parted Magic CDROM / partition
+nolvm          Do not start device mapper
+dmraid         Create device mapper devices
+numlock=on     Set numlock to on at boot
+nosound        Do not let ALSA set volume levels (mute)
+noconky        Do not auto-start conky
+
+Press <TAB> to edit the boot options
+Press <F2> for a list of daemons (services) to stop
+Press <F3> for all supported keyboard maps
+Press <F4> for a list of VGA modes
