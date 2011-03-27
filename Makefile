@@ -42,7 +42,15 @@ syslinux-iso: syslinux base
 	cp $(DOWNLOAD)/syslinux/core/isolinux.bin $(CONTENTS)/isolinux/
 	touch syslinux-iso
 
-#TODO: syslinux-usb
+syslinux-usb: syslinux base
+	@echo '*** Installing: syslinux'
+	@if test -z $(TARGET); then echo '!!! You have to define TARGET!'; exit 1; fi
+	blkid -t TYPE="vfat" $(TARGET)
+	$(MOUNT) $(TARGET) $(MOUNTPOINT)
+	test -d $(MOUNTPOINT)/mnt/isolinux || mkdir -v $(MOUNTPOINT)/mnt/isolinux
+	$(UMOUNT) $(MOUNTPOINT)
+	$(DOWNLOAD)/syslinux/linux/syslinux-nomtools -d isolinux -i $(TARGET)
+	@echo '??? You may want to install mbr on you USB drive'
 
 # различные ОС, отдельно скачивание и установка
 
@@ -152,11 +160,12 @@ iso: base $(SYSTEMS) syslinux-iso config
 
 install-usb: base $(SYSTEMS) syslinux-usb config
 	@echo '*** Installing $(CONTENTS) on usb-drive'
-	ifndef TARGET
-		@echo "!!! You have to define TARGET to install this on your USB-key"
-		exit 1
-	endif
-	#TODO: доделать
+	@if test -z $(TARGET); then echo "!!! You have to define TARGET to make install-usb!"; exit 1; fi
+	$(MOUNT) $(TARGET) $(MOUNTPOINT)
+	cp -rv $(CONTENTS)/* $(MOUNTPOINT)
+	rm -fv $(MOUNTPOINT)/isolinux/isolinux.bin
+	mv -v $(MOUNTPOINT)/isolinux/isolinux.cfg $(MOUNTPOINT)/isolinux/syslinux.cfg
+	$(UMOUNT) $(MOUNTPOINT)
 
 # сборка isolinux.cfg
 
