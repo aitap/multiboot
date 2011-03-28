@@ -66,6 +66,7 @@ pmagic: pmagic-latest
 	@echo '*** Copying: pmagic'
 	$(MOUNT) -o loop $(DOWNLOAD)/pmagic.iso $(MOUNTPOINT)
 	cp -rv $(MOUNTPOINT)/pmagic $(CONTENTS)/
+	for file in mhdd plpbt sgd syslinux/hdt.gz syslinux/memdisk syslinux/memtest syslinux/reboot.c32; do cp -rv $(MOUNTPOINT)/boot/$$file $(CONTENTS)/pmagic/; done
 	$(UMOUNT) $(MOUNTPOINT)
 	@echo '*** Copying configs'
 	cp -v $(CONFIGS)/pmagic.cfg $(CONTENTS)/isolinux/pmagic.cfg
@@ -98,7 +99,7 @@ sysrcd: sysrcd-latest
 	mkdir $(CONTENTS)/sysrcd
 	$(MOUNT) -o loop $(DOWNLOAD)/sysrcd.iso $(MOUNTPOINT)
 	for file in bootdisk bootprog ntpasswd sysrcd.dat sysrcd.md5 version; do cp -rv $(MOUNTPOINT)/$$file $(CONTENTS); done
-	for file in rescue* altker* initram.igz; do cp -v $(MOUNTPOINT)/isolinux/$$file $(CONTENTS)/sysrcd; done
+	for file in rescue* altker* initram.igz memdisk; do cp -v $(MOUNTPOINT)/isolinux/$$file $(CONTENTS)/sysrcd; done
 	$(UMOUNT) $(MOUNTPOINT)
 	@echo '*** Copying configs'
 	cp -v $(CONFIGS)/sysrcd.cfg $(CONTENTS)/isolinux/sysrcd.cfg
@@ -174,8 +175,9 @@ install-usb: base $(SYSTEMS) syslinux-usb config
 
 config: base syslinux
 	@echo '*** Building isolinux.cfg'
+	rm -vf $(CONTENTS)/isolinux/config.cfg $(CONTENTS)/isolinux/isolinux.cfg
 	echo "INCLUDE config.cfg" > $(CONTENTS)/isolinux/isolinux.cfg.1
-	for file in $(wildcard $(CONTENTS)/isolinux/*cfg); do echo "INCLUDE $$(basename $$file)" >> $(CONTENTS)/isolinux/isolinux.cfg.1; done
+	for file in $(CONTENTS)/isolinux/*cfg; do echo "INCLUDE $$(basename $$file)" >> $(CONTENTS)/isolinux/isolinux.cfg.1; done
 	mv $(CONTENTS)/isolinux/isolinux.cfg.1 $(CONTENTS)/isolinux/isolinux.cfg
 	cp $(CONFIGS)/rus.psf $(CONFIGS)/back.png $(CONFIGS)/config.cfg $(CONTENTS)/isolinux/
 	cp $(wildcard $(DOWNLOAD)/syslinux/com32/menu/*menu.c32) $(CONTENTS)/isolinux
