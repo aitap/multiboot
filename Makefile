@@ -1,6 +1,7 @@
 IMAGE = ./image.iso
 
 MKISOFS = genisomage
+CDRECORD = wodim
 
 CONTENTS = ./contents/
 DOWNLOAD = ./download/
@@ -12,7 +13,7 @@ UMOUNT = umount
 
 SYSTEMS = pmagic finnix sysrcd grub4dos debian dsl
 
-.PHONY: all clean
+.PHONY: all clean syslinux-usb install-usb burn
 
 # базовые вещи
 
@@ -182,3 +183,9 @@ config: base syslinux
 	cp $(CONFIGS)/rus.psf $(CONFIGS)/back.png $(CONFIGS)/config.cfg $(CONTENTS)/isolinux/
 	cp $(wildcard $(DOWNLOAD)/syslinux/com32/menu/*menu.c32) $(CONTENTS)/isolinux
 	touch config
+
+# выжигание
+burn: iso
+	@echo -e '\e[1m*** Burning iso\e[0m'
+	$(CDRECORD) -v $(IMAGE)
+
