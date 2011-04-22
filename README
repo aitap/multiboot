@@ -15,6 +15,7 @@ iso: make iso-image
 install-usb: install multi-boot compilation to usb-drive (you'll have to define TARGET=/dev/sdXY)
 clean: self-explanatory :)
 burn: burn the image on the disk
+format-usb: format the usb-drive (mkfs + install-mbr)
 
 Useful variables:
 

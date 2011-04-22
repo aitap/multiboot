@@ -189,3 +189,7 @@ burn: iso
 	@echo -e '\e[1m*** Burning iso\e[0m'
 	$(CDRECORD) -v $(IMAGE)
 
+format-usb:
+	@echo -e '\e[1m*** Formatting usb thumbdrive...\e[0m'
+	@if [ -z $(TARGET) ]; then /bin/echo -e '\e[1m!!! You have to define TARGET!\e[0m'; exit 1; fi
+	case $(TARGET) in /dev/sd[a-z][0-9]*)	mkfs.vfat -v $(TARGET);	install-mbr $$(echo $(TARGET) | grep -o '/dev/sd[a-z]')	;; /dev/sd[a-z]) mkfs.vfat -v $(TARGET)	;; *) /bin/echo -e "\e[1m!!! Don't know what to do with $(TARGET)\e[0m" ;; esac
