@@ -7,6 +7,7 @@ This Makefile allows you to build yourself a multiboot cd with fixed amount of c
  - GRUB4DOS (http://grub4dos-chenall.googlecode.com)
  - Debian testing netinstall (http://debian.org)
  - DamnSmallLinux (http://damnsmalllinux.org)
+ - TinyCoreLinux (http://distro.ibiblio.org/tinycorelinux/)
 
 Useful make rules:
 

@@ -11,7 +11,7 @@ MOUNTPOINT = /mnt
 MOUNT = mount
 UMOUNT = umount
 
-SYSTEMS = pmagic finnix sysrcd grub4dos debian dsl
+SYSTEMS = pmagic finnix sysrcd grub4dos debian dsl tinycore
 
 .PHONY: all clean syslinux-usb install-usb burn
 
@@ -66,6 +66,7 @@ pmagic-latest: base
 pmagic: pmagic-latest
 	@echo -e '\e[1m*** pmagic: installing\e[0m'
 	$(MOUNT) -o loop $(DOWNLOAD)/pmagic.iso $(MOUNTPOINT)
+	rm -rvf $(CONTENTS)/pmagic
 	cp -rv $(MOUNTPOINT)/pmagic $(CONTENTS)/
 	for file in mhdd plpbt sgd syslinux/hdt.gz syslinux/memdisk syslinux/memtest syslinux/reboot.c32; do cp -rv $(MOUNTPOINT)/boot/$$file $(CONTENTS)/pmagic/; done
 	$(UMOUNT) $(MOUNTPOINT)
@@ -151,6 +152,22 @@ dsl: dsl-latest
 	@echo -e '\e[1m*** dsl: copying configs\e[0m'
 	cp -v $(CONFIGS)/dsl.cfg $(CONTENTS)/isolinux/
 	touch dsl
+
+tinycore-latest: base
+	@echo -e '\e[1m*** tinycore: downloading\e[0m'
+	wget -cO$(DOWNLOAD)/tinycore.iso http://distro.ibiblio.org/tinycorelinux/3.x/release/tinycore-current.iso
+	touch tinycore-latest
+
+tinycore: tinycore-latest
+	@echo -e '\e[1m*** tinycore: installing\e[0m'
+	$(MOUNT) -o loop $(DOWNLOAD)/tinycore.iso $(MOUNTPOINT)
+	rm -rvf $(CONTENTS)/tinycore
+	mkdir -v $(CONTENTS)/tinycore
+	for file in bzImage tinycore.gz; do cp -v $(MOUNTPOINT)/boot/$$file $(CONTENTS)/tinycore; done
+	@echo -e '\e[1m*** tinycore: copying configs\e[0m'
+	cp -v $(CONFIGS)/tinycore* $(CONTENTS)/isolinux/
+	$(UMOUNT) $(MOUNTPOINT)
+	touch tinycore
 
 # сборка образа, установка на флешку
 
