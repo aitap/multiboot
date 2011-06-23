@@ -101,7 +101,7 @@ sysrcd: sysrcd-latest
 	mkdir $(CONTENTS)/sysrcd
 	$(MOUNT) -o loop $(DOWNLOAD)/sysrcd.iso $(MOUNTPOINT)
 	for file in bootdisk bootprog ntpasswd sysrcd.dat sysrcd.md5 version; do cp -rv $(MOUNTPOINT)/$$file $(CONTENTS); done
-	for file in rescue* altker* initram.igz memdisk; do cp -v $(MOUNTPOINT)/isolinux/$$file $(CONTENTS)/sysrcd; done
+	for file in rescue* altker* initram.igz memdisk netboot; do cp -v $(MOUNTPOINT)/isolinux/$$file $(CONTENTS)/sysrcd; done
 	$(UMOUNT) $(MOUNTPOINT)
 	@echo -e '\e[1m*** sysrcd: copying configs\e[0m'
 	cp -v $(CONFIGS)/sysrcd.cfg $(CONTENTS)/isolinux/sysrcd.cfg
