@@ -57,10 +57,7 @@ syslinux-usb: syslinux base
 
 pmagic-latest: base
 	@echo -e '\e[1m*** pmagic: downloading\e[0m'
-	wget -cO$(DOWNLOAD)/pmagic.iso.zip $(shell wget -qO- 'http://partedmagic.com/doku.php?id=downloads' | egrep -om1 'href="http://sourceforge.net/projects/partedmagic/files/partedmagic/[^"]+"' | sed -r 's/href="(.*)"/\1/')
-	@echo -e '\e[1m*** pmagic: unpacking\e[0m'
-	zcat $(DOWNLOAD)/pmagic.iso.zip > $(DOWNLOAD)/pmagic.iso
-	rm $(DOWNLOAD)/pmagic.iso.zip
+	wget -cO$(DOWNLOAD)/pmagic.iso $(shell wget -qO- 'http://partedmagic.com/doku.php?id=downloads' | egrep -om1 'href="http://sourceforge.net/projects/partedmagic/files/partedmagic/[^"]+"' | sed -r 's/href="(.*)"/\1/')
 	touch pmagic-latest
 
 pmagic: pmagic-latest
