@@ -57,7 +57,10 @@ syslinux-usb: syslinux base
 
 pmagic-latest: base
 	@echo -e '\e[1m*** pmagic: downloading\e[0m'
-	wget -cO$(DOWNLOAD)/pmagic.iso $(shell wget -qO- 'http://partedmagic.com/doku.php?id=downloads' | egrep -om1 'href="http://sourceforge.net/projects/partedmagic/files/partedmagic/[^"]+"' | sed -r 's/href="(.*)"/\1/')
+	wget -cO$(DOWNLOAD)/pmagic.iso.zip $(shell wget -qO- 'http://partedmagic.com/doku.php?id=downloads' | egrep -om1 'href="http://sourceforge.net/projects/partedmagic/files/partedmagic/[^"]+"' | sed -r 's/href="(.*)"/\1/')
+	@echo -e '\e[1m*** pmagic: extracting\e[0m'
+	zcat $(DOWNLOAD)/pmagic.iso.zip > $(DOWNLOAD)/pmagic.iso
+	rm $(DOWNLOAD)/pmagic.iso.zip
 	touch pmagic-latest
 
 pmagic: pmagic-latest
@@ -81,7 +84,7 @@ finnix: finnix-latest
 	@echo -e '\e[1m*** finnix: installing\e[0m'
 	$(MOUNT) -o loop $(DOWNLOAD)/finnix.iso $(MOUNTPOINT)
 	cp -rv $(MOUNTPOINT)/finnix/ $(CONTENTS)
-	for file in *.imz hdt.c32 initrd.gz linux linux64 memdisk memtest pci.ids; do cp -v $(MOUNTPOINT)/isolinux/$$file $(CONTENTS)/finnix/; done
+	for file in *.imz hdt.c32 initrd.xz linux linux64 memdisk memtest pci.ids; do cp -v $(MOUNTPOINT)/isolinux/$$file $(CONTENTS)/finnix/; done
 	$(UMOUNT) $(MOUNTPOINT)
 	@echo -e '\e[1m*** finnix: copying configs\e[0m'
 	cp -v $(CONFIGS)/finnix.cfg $(CONTENTS)/isolinux/finnix.cfg
