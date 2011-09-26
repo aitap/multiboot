@@ -155,7 +155,7 @@ dsl: dsl-latest
 
 tinycore-latest: base
 	@echo -e '\e[1m*** tinycore: downloading\e[0m'
-	wget -cO$(DOWNLOAD)/tinycore.iso http://distro.ibiblio.org/tinycorelinux/3.x/release/tinycore-current.iso
+	wget -cO$(DOWNLOAD)/tinycore.iso http://distro.ibiblio.org/tinycorelinux/4.x/x86/release/tinycore-current.iso
 	touch tinycore-latest
 
 tinycore: tinycore-latest
@@ -163,7 +163,7 @@ tinycore: tinycore-latest
 	$(MOUNT) -o loop $(DOWNLOAD)/tinycore.iso $(MOUNTPOINT)
 	rm -rvf $(CONTENTS)/tinycore
 	mkdir -v $(CONTENTS)/tinycore
-	for file in bzImage tinycore.gz; do cp -v $(MOUNTPOINT)/boot/$$file $(CONTENTS)/tinycore; done
+	for file in vmlinuz tinycore.gz; do cp -v $(MOUNTPOINT)/boot/$$file $(CONTENTS)/tinycore; done
 	@echo -e '\e[1m*** tinycore: copying configs\e[0m'
 	cp -v $(CONFIGS)/tinycore* $(CONTENTS)/isolinux/
 	$(UMOUNT) $(MOUNTPOINT)
