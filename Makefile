@@ -77,7 +77,7 @@ pmagic: pmagic-latest
 
 finnix-latest: base
 	@echo -e '\e[1m*** finnix: downloading\e[0m'
-	wget -cO$(DOWNLOAD)/finnix.iso http://finnix.org/releases/current/$(shell wget -qO- 'http://finnix.org/releases/current/' | grep '.iso"' | grep -v ppc | sed -r 's/.*href="(.*)".*/\1/' | head -1)
+	wget -cO$(DOWNLOAD)/finnix.iso $(shell wget -qO- http://finnix.org/releases/current/ | sed -rn '/"finnix-[0-9]+.iso"/{s#.*"(finnix-[0-9]+.iso)".*#http://finnix.org/releases/current/\1#;p}')
 	touch finnix-latest
 
 finnix: finnix-latest
