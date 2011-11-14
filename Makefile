@@ -40,8 +40,8 @@ syslinux: base
 	@echo -e '\e[1m*** syslinux: downloading & extracting\e[0m'
 	URL=$$(wget -qO- 'http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D' | sed -rn '/.bz2/{s/.*href="([^"]+)".*/\1/p;q}');\
 	$(WGET) -O$(DOWNLOAD)/syslinux.tar.bz2 http://www.kernel.org/pub/linux/utils/boot/syslinux/$$URL;\
-	test -e syslinux && rm -rvf syslinux;\
-	tar -xvf syslinux.tar.bz2;\
+	test -e $(DOWNLOAD)/syslinux && rm -rvf $(DOWNLOAD)/syslinux;\
+	tar -C $(DOWNLOAD) -xvf syslinux.tar.bz2;\
 	mv -v $(DOWNLOAD)/$$(basename $$URL .tar.bz2) $(DOWNLOAD)/syslinux
 	touch syslinux
 
