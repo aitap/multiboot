@@ -99,7 +99,7 @@ finnix: finnix-latest
 
 sysrcd-latest: base
 	@echo -e '\e[1m*** sysrcd: downloading\e[0m'
-	$(WGET) -O$(DOWNLOAD)/sysrcd.iso $(shell wget -qO- http://sysresccd.org/Download | egrep -om1 'href="https://sourceforge.net/projects/systemrescuecd/files/sysresccd-x86/[^"]+"' | sed -r 's/href="(.*)"/\1/')
+	$(WGET) -O$(DOWNLOAD)/sysrcd.iso $(shell wget -qO- http://sysresccd.org/Download | sed -rn '/href=.*iso/{s/.*href="([^"]+)".*/\1/p;q}')
 	touch sysrcd-latest
 
 sysrcd: sysrcd-latest
