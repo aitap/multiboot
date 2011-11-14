@@ -1,18 +1,20 @@
-IMAGE = ./image.iso
+#!/usr/bin/make -f
 
-MKISOFS = genisomage
-CDRECORD = wodim
-WGET = wget -N -c
+IMAGE := ./image.iso
 
-CONTENTS = ./contents/
-DOWNLOAD = ./download/
-CONFIGS = ./configs/
+MKISOFS := genisomage
+CDRECORD := wodim
+WGET := wget -c
 
-MOUNTPOINT = /mnt
-MOUNT = mount
-UMOUNT = umount
+CONTENTS := ./contents/
+DOWNLOAD := ./download/
+CONFIGS := ./configs/
 
-SYSTEMS = pmagic finnix sysrcd grub4dos debian dsl tinycore
+MOUNTPOINT := /mnt
+MOUNT := mount
+UMOUNT := umount
+
+SYSTEMS := pmagic finnix sysrcd grub4dos debian dsl tinycore
 
 .PHONY: all clean syslinux-usb install-usb burn
 
@@ -36,7 +38,11 @@ clean:
 
 syslinux: base
 	@echo -e '\e[1m*** syslinux: downloading & extracting\e[0m'
-	URL=$$(wget -qO- 'http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D' | sed -rn '/.bz2/{s/.*href="([^"]+)".*/\1/p;q}'); $(WGET) -O$(DOWNLOAD)/$$URL http://www.kernel.org/pub/linux/utils/boot/syslinux/$$URL; tar -C $(DOWNLOAD) -xvf $(DOWNLOAD)/$$URL; mv -v $(DOWNLOAD)/$$(basename $$URL .tar.bz2) $(DOWNLOAD)/syslinux
+	URL=$$(wget -qO- 'http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D' | sed -rn '/.bz2/{s/.*href="([^"]+)".*/\1/p;q}');\
+	$(WGET) -O$(DOWNLOAD)/syslinux.tar.bz2 http://www.kernel.org/pub/linux/utils/boot/syslinux/$$URL;\
+	test -e syslinux && rm -rvf syslinux;\
+	tar -xvf syslinux.tar.bz2;\
+	mv -v $(DOWNLOAD)/$$(basename $$URL .tar.bz2) $(DOWNLOAD)/syslinux
 	touch syslinux
 
 syslinux-iso: syslinux base
@@ -52,7 +58,7 @@ syslinux-usb: syslinux base
 	test -d $(MOUNTPOINT)/isolinux || mkdir -v $(MOUNTPOINT)/isolinux
 	$(UMOUNT) $(MOUNTPOINT)
 	$(DOWNLOAD)/syslinux/linux/syslinux-nomtools -d isolinux -i $(TARGET)
-	@echo -e '\e[1m??? You may want to install mbr on you USB drive\e[0m'
+	@echo -e '\e[1mYou may want to install mbr on your USB drive\e[0m'
 
 # различные ОС, отдельно скачивание и установка
 
