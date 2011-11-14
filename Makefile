@@ -2,6 +2,7 @@ IMAGE = ./image.iso
 
 MKISOFS = genisomage
 CDRECORD = wodim
+WGET = wget -N -c
 
 CONTENTS = ./contents/
 DOWNLOAD = ./download/
@@ -35,7 +36,7 @@ clean:
 
 syslinux: base
 	@echo -e '\e[1m*** syslinux: downloading & extracting\e[0m'
-	URL=$$(wget -qO- 'http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D' | grep -m1 '.bz2"' | sed -r 's/.*"(.*)".*/\1/'); wget -cO$(DOWNLOAD)/$$URL http://www.kernel.org/pub/linux/utils/boot/syslinux/$$URL; tar -C $(DOWNLOAD) -xvf $(DOWNLOAD)/$$URL; mv -v $(DOWNLOAD)/$$(basename $$URL .tar.bz2) $(DOWNLOAD)/syslinux
+	URL=$$(wget -qO- 'http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D' | sed -rn '/.bz2/{s/.*href="([^"]+)".*/\1/p;q}'); $(WGET) -O$(DOWNLOAD)/$$URL http://www.kernel.org/pub/linux/utils/boot/syslinux/$$URL; tar -C $(DOWNLOAD) -xvf $(DOWNLOAD)/$$URL; mv -v $(DOWNLOAD)/$$(basename $$URL .tar.bz2) $(DOWNLOAD)/syslinux
 	touch syslinux
 
 syslinux-iso: syslinux base
@@ -57,7 +58,7 @@ syslinux-usb: syslinux base
 
 pmagic-latest: base
 	@echo -e '\e[1m*** pmagic: downloading\e[0m'
-	wget -cO$(DOWNLOAD)/pmagic.iso.zip $(shell wget -qO- 'http://partedmagic.com/doku.php?id=downloads' | egrep -om1 'href="http://sourceforge.net/projects/partedmagic/files/partedmagic/[^"]+"' | sed -r 's/href="(.*)"/\1/')
+	$(WGET) -O$(DOWNLOAD)/pmagic.iso.zip $(shell wget -qO- 'http://partedmagic.com/doku.php?id=downloads' | sed -rn '/href=".*pmagic-i686.*iso\.zip/{s/.*href="([^"]+)".*/\1/p;q}')
 	@echo -e '\e[1m*** pmagic: extracting\e[0m'
 	zcat $(DOWNLOAD)/pmagic.iso.zip > $(DOWNLOAD)/pmagic.iso
 	rm $(DOWNLOAD)/pmagic.iso.zip
@@ -77,7 +78,7 @@ pmagic: pmagic-latest
 
 finnix-latest: base
 	@echo -e '\e[1m*** finnix: downloading\e[0m'
-	wget -cO$(DOWNLOAD)/finnix.iso $(shell wget -qO- http://finnix.org/releases/current/ | sed -rn '/"finnix-[0-9]+.iso"/{s#.*"(finnix-[0-9]+.iso)".*#http://finnix.org/releases/current/\1#;p}')
+	$(WGET) -O$(DOWNLOAD)/finnix.iso $(shell wget -qO- http://finnix.org/releases/current/ | sed -rn '/"finnix-[0-9]+.iso"/{s#.*"(finnix-[0-9]+.iso)".*#http://finnix.org/releases/current/\1#;p}')
 	touch finnix-latest
 
 finnix: finnix-latest
@@ -92,7 +93,7 @@ finnix: finnix-latest
 
 sysrcd-latest: base
 	@echo -e '\e[1m*** sysrcd: downloading\e[0m'
-	wget -cO$(DOWNLOAD)/sysrcd.iso $(shell wget -qO- http://sysresccd.org/Download | egrep -om1 'href="https://sourceforge.net/projects/systemrescuecd/files/sysresccd-x86/[^"]+"' | sed -r 's/href="(.*)"/\1/')
+	$(WGET) -O$(DOWNLOAD)/sysrcd.iso $(shell wget -qO- http://sysresccd.org/Download | egrep -om1 'href="https://sourceforge.net/projects/systemrescuecd/files/sysresccd-x86/[^"]+"' | sed -r 's/href="(.*)"/\1/')
 	touch sysrcd-latest
 
 sysrcd: sysrcd-latest
@@ -110,7 +111,7 @@ sysrcd: sysrcd-latest
 
 grub4dos-latest: base
 	@echo -e '\e[1m*** grub4dos: downloading & extracting\e[0m'
-	URL=http://grub4dos-chenall.googlecode.com/files/$$(wget -qO- http://code.google.com/p/grub4dos-chenall/downloads/list | egrep -om1 'grub4dos-[a-z0-9.\-]+.7z' | head -1); wget -cO$(DOWNLOAD)/$$(basename $$URL) $$URL; 7z e -y -xr'!*chinese*' -o$(DOWNLOAD)/grub4dos $(DOWNLOAD)/$$(basename $$URL);
+	URL=http://grub4dos-chenall.googlecode.com/files/$$(wget -qO- http://code.google.com/p/grub4dos-chenall/downloads/list | sed -rn "/href=.*'Featured'/{s/.*href=\"([^\"]+)\".*/http:\1/p;q}"); $(WGET) -O$(DOWNLOAD)/$$(basename $$URL) $$URL; 7z e -y -xr'!*chinese*' -o$(DOWNLOAD)/grub4dos $(DOWNLOAD)/$$(basename $$URL);
 	touch grub4dos-latest
 
 grub4dos: grub4dos-latest
@@ -125,8 +126,8 @@ love:
 
 debian-latest: base
 	@echo -e '\e[1m*** debian: downloading\e[0m'
-	wget -cO$(DOWNLOAD)/debian.bzi http://ftp.ru.debian.org/debian/dists/testing/main/installer-i386/current/images/netboot/debian-installer/i386/linux
-	wget -cO$(DOWNLOAD)/debian.ifs http://ftp.ru.debian.org/debian/dists/testing/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz
+	$(WGET) -O$(DOWNLOAD)/debian.bzi http://ftp.ru.debian.org/debian/dists/testing/main/installer-i386/current/images/netboot/debian-installer/i386/linux
+	$(WGET) -O$(DOWNLOAD)/debian.ifs http://ftp.ru.debian.org/debian/dists/testing/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz
 	touch debian-latest
 
 debian: debian-latest
@@ -140,7 +141,7 @@ debian: debian-latest
 
 dsl-latest: base
 	@echo -e '\e[1m*** dsl: downloading\e[0m'
-	wget -cO$(DOWNLOAD)/dsl.iso http://ftp.belnet.be/packages/damnsmalllinux/current/current.iso
+	$(WGET) -O$(DOWNLOAD)/dsl.iso http://ftp.belnet.be/packages/damnsmalllinux/current/current.iso
 	touch dsl-latest
 
 dsl: dsl-latest
@@ -155,7 +156,7 @@ dsl: dsl-latest
 
 tinycore-latest: base
 	@echo -e '\e[1m*** tinycore: downloading\e[0m'
-	wget -cO$(DOWNLOAD)/tinycore.iso http://distro.ibiblio.org/tinycorelinux/4.x/x86/release/tinycore-current.iso
+	$(WGET) -O$(DOWNLOAD)/tinycore.iso http://distro.ibiblio.org/tinycorelinux/4.x/x86/release/tinycore-current.iso
 	touch tinycore-latest
 
 tinycore: tinycore-latest
