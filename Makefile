@@ -41,7 +41,7 @@ syslinux: base
 	URL=$$(wget -qO- 'http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D' | sed -rn '/.bz2/{s/.*href="([^"]+)".*/\1/p;q}');\
 	$(WGET) -O$(DOWNLOAD)/syslinux.tar.bz2 http://www.kernel.org/pub/linux/utils/boot/syslinux/$$URL;\
 	test -e $(DOWNLOAD)/syslinux && rm -rvf $(DOWNLOAD)/syslinux;\
-	tar -C $(DOWNLOAD) -xvf syslinux.tar.bz2;\
+	tar -C $(DOWNLOAD) -xvf $(DOWNLOAD)/syslinux.tar.bz2;\
 	mv -v $(DOWNLOAD)/$$(basename $$URL .tar.bz2) $(DOWNLOAD)/syslinux
 	touch syslinux
 
@@ -64,10 +64,10 @@ syslinux-usb: syslinux base
 
 pmagic-latest: base
 	@echo -e '\e[1m*** pmagic: downloading\e[0m'
-	$(WGET) -O$(DOWNLOAD)/pmagic.iso.zip $(shell wget -qO- 'http://partedmagic.com/doku.php?id=downloads' | sed -rn '/href=".*pmagic-i686.*iso\.zip/{s/.*href="([^"]+)".*/\1/p;q}')
-	@echo -e '\e[1m*** pmagic: extracting\e[0m'
-	zcat $(DOWNLOAD)/pmagic.iso.zip > $(DOWNLOAD)/pmagic.iso
-	rm $(DOWNLOAD)/pmagic.iso.zip
+	$(WGET) -O$(DOWNLOAD)/pmagic.iso $(shell wget -qO- 'http://partedmagic.com/doku.php?id=downloads' | sed -rn '/href=".*pmagic.*i686.*iso/{s/.*href="([^"]+)".*/\1/p;q}')
+#	@echo -e '\e[1m*** pmagic: extracting\e[0m'
+#	zcat $(DOWNLOAD)/pmagic.iso.zip > $(DOWNLOAD)/pmagic.iso
+#	rm $(DOWNLOAD)/pmagic.iso.zip
 	touch pmagic-latest
 
 pmagic: pmagic-latest
@@ -117,7 +117,8 @@ sysrcd: sysrcd-latest
 
 grub4dos-latest: base
 	@echo -e '\e[1m*** grub4dos: downloading & extracting\e[0m'
-	URL=http://grub4dos-chenall.googlecode.com/files/$$(wget -qO- http://code.google.com/p/grub4dos-chenall/downloads/list | sed -rn "/href=.*'Featured'/{s/.*href=\"([^\"]+)\".*/http:\1/p;q}"); $(WGET) -O$(DOWNLOAD)/$$(basename $$URL) $$URL; 7z e -y -xr'!*chinese*' -o$(DOWNLOAD)/grub4dos $(DOWNLOAD)/$$(basename $$URL);
+	URL=$$(wget -qO- http://code.google.com/p/grub4dos-chenall/downloads/list | sed -rn "/href=.*'Featured'/{s/.*href=\"([^\"]+)\".*/http:\1/p;q}");\
+	$(WGET) -O$(DOWNLOAD)/$$(basename $$URL) $$URL; 7z e -y -xr'!*chinese*' -o$(DOWNLOAD)/grub4dos $(DOWNLOAD)/$$(basename $$URL);
 	touch grub4dos-latest
 
 grub4dos: grub4dos-latest
