@@ -62,7 +62,7 @@ syslinux-usb: syslinux base
 
 pmagic-latest: base
 	@echo -e '\e[1m*** pmagic: downloading\e[0m'
-	$(WGET) -O$(DOWNLOAD)/pmagic.iso $(shell wget -qO- 'http://partedmagic.com/doku.php?id=downloads' | sed -rn '/href=".*pmagic.*i686.*iso/{s/.*href="([^"]+)".*/\1/p;q}')
+	$(WGET) -O$(DOWNLOAD)/pmagic.iso $(shell wget -qO- 'http://partedmagic.com/doku.php?id=downloads' | sed -rn '/href=".*pmagic[0-9_]*\.iso/{s/.*href="([^"]+)".*/\1/p;q}')
 	touch pmagic-latest
 
 pmagic: pmagic-latest
