@@ -142,15 +142,16 @@ debian: debian-latest
 
 tinycore-latest: base
 	@echo -e '\e[1m*** tinycore: downloading\e[0m'
-	$(WGET) -O$(DOWNLOAD)/tinycore.iso http://distro.ibiblio.org/tinycorelinux/4.x/x86/release/tinycore-current.iso
+	$(WGET) -O$(DOWNLOAD)/tinycore.iso http://distro.ibiblio.org/tinycorelinux/4.x/x86/release/TinyCore-current.iso
 	touch tinycore-latest
 
 tinycore: tinycore-latest
 	@echo -e '\e[1m*** tinycore: installing\e[0m'
 	$(MOUNT) -o loop $(DOWNLOAD)/tinycore.iso $(MOUNTPOINT)
-	rm -rvf $(CONTENTS)/tinycore
-	mkdir -pv $(CONTENTS)/tinycore
-	set -e; for file in vmlinuz tinycore.gz; do cp -v $(MOUNTPOINT)/boot/$$file $(CONTENTS)/tinycore; done
+	rm -rvf $(CONTENTS)/tce $(CONTENTS)/cde
+	cp -rv $(MOUNTPOINT)/cde $(CONTENTS)/
+	set -e; for file in vmlinuz core.gz; do cp -v $(MOUNTPOINT)/boot/$$file $(CONTENTS)/cde; done
+	ln -sv "cde" $(CONTENTS)/tce
 	@echo -e '\e[1m*** tinycore: copying configs\e[0m'
 	cp -v $(CONFIGS)/tinycore* $(CONTENTS)/isolinux/
 	$(UMOUNT) $(MOUNTPOINT)
@@ -171,7 +172,7 @@ install-usb: base $(SYSTEMS) syslinux-usb config
 	@echo -e '\e[1m*** Installing $(CONTENTS) on usb-drive\e[0m'
 	@if test -z $(TARGET); then echo "!!! You have to define TARGET to make install-usb!"; exit 1; fi
 	$(MOUNT) $(TARGET) $(MOUNTPOINT)
-	cp -rv $(CONTENTS)/* $(MOUNTPOINT)
+	cp -Lrv $(CONTENTS)/* $(MOUNTPOINT)
 	rm -fv $(MOUNTPOINT)/isolinux/isolinux.bin
 	mv -v $(MOUNTPOINT)/isolinux/isolinux.cfg $(MOUNTPOINT)/isolinux/syslinux.cfg
 	$(UMOUNT) $(MOUNTPOINT)
