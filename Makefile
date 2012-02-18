@@ -128,8 +128,8 @@ love:
 
 debian-latest: base
 	@echo -e '\e[1m*** debian: downloading\e[0m'
-	$(WGET) -O$(DOWNLOAD)/debian.bzi http://ftp.ru.debian.org/debian/dists/testing/main/installer-i386/current/images/netboot/debian-installer/i386/linux
-	$(WGET) -O$(DOWNLOAD)/debian.ifs http://ftp.ru.debian.org/debian/dists/testing/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz
+	$(WGET) -O$(DOWNLOAD)/debian.bzi http://ftp.ru.debian.org/debian/dists/squeeze/main/installer-i386/current/images/netboot/debian-installer/i386/linux
+	$(WGET) -O$(DOWNLOAD)/debian.ifs http://ftp.ru.debian.org/debian/dists/squeeze/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz
 	touch debian-latest
 
 debian: debian-latest
