@@ -112,7 +112,7 @@ sysrcd: sysrcd-latest
 
 grub4dos-latest: base
 	@echo -e '\e[1m*** grub4dos: downloading & extracting\e[0m'
-	URL=$$(wget -qO- http://code.google.com/p/grub4dos-chenall/downloads/list | sed -rn "/href=.*'Featured'/{s/.*href=\"([^\"]+)\".*/http:\1/p;q}");\
+	URL=$$(wget -qO- http://code.google.com/p/grub4dos-chenall/downloads/list | sed -rn '/href=.*Featured/{s/.*href="([^"]+)".*/http:\1/p;q}');\
 	$(WGET) -O$(DOWNLOAD)/grub4dos.7z $$URL; 7z e -y -i'!grub4dos-*/grub.exe' -o$(DOWNLOAD) $(DOWNLOAD)/grub4dos.7z
 	touch grub4dos-latest
 
@@ -128,14 +128,15 @@ love:
 
 debian-latest: base
 	@echo -e '\e[1m*** debian: downloading\e[0m'
-	$(WGET) -O$(DOWNLOAD)/debian.bzi http://ftp.ru.debian.org/debian/dists/squeeze/main/installer-i386/current/images/netboot/debian-installer/i386/linux
-	$(WGET) -O$(DOWNLOAD)/debian.ifs http://ftp.ru.debian.org/debian/dists/squeeze/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz
+	mkdir -p $(DOWNLOAD)/debian
+	$(WGET) -O $(DOWNLOAD)/debian/debian.tgz $$(wget -qO- "http://cdimage.debian.org/cdimage/unofficial/backports/squeeze/?C=M;O=D" | sed -rn '/netboot-i386/{s#.*href="([^"]+)".*#http://cdimage.debian.org/cdimage/unofficial/backports/squeeze/\1#p;q}')
+	for f in linux initrd.gz; do tar -xvOf $(DOWNLOAD)/debian/debian.tgz ./debian-installer/i386/$$f > $(DOWNLOAD)/debian/$$(basename $$f); done
 	touch debian-latest
 
 debian: debian-latest
 	@echo -e '\e[1m*** debian: installing\e[0m'
 	mkdir -pv $(CONTENTS)/debian/
-	cp -v $(DOWNLOAD)/debian.bzi $(DOWNLOAD)/debian.ifs $(CONTENTS)/debian/
+	cp -v $(DOWNLOAD)/debian/linux $(DOWNLOAD)/debian/initrd.gz $(CONTENTS)/debian/
 	@echo -e '\e[1m*** debian: copying configs\e[0m'
 	cp -v $(CONFIGS)/debian.cfg $(CONTENTS)/isolinux/debian.cfg
 	touch debian
