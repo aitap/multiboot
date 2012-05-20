@@ -9,6 +9,7 @@ WGET := wget -c
 CONTENTS := ./contents/
 DOWNLOAD := ./download/
 CONFIGS := ./configs/
+SCRIPTS := ./scripts/
 
 MOUNTPOINT := /mnt
 MOUNT := mount
@@ -66,15 +67,15 @@ pmagic-latest: base
 	touch pmagic-latest
 
 pmagic: pmagic-latest
+	@echo -e '\e[1m*** pmagic: copying configs\e[0m'
+	cp -v $(CONFIGS)/pmagic.cfg $(CONTENTS)/isolinux/pmagic.cfg
 	@echo -e '\e[1m*** pmagic: installing\e[0m'
 	$(MOUNT) -o loop $(DOWNLOAD)/pmagic.iso $(MOUNTPOINT)
 	rm -rvf $(CONTENTS)/pmagic
 	cp -rv $(MOUNTPOINT)/pmagic $(CONTENTS)/
 	set -e; for file in mhdd plpbt sgd syslinux/hdt.gz syslinux/memdisk syslinux/memtest syslinux/reboot.c32 chntpw; do cp -rv $(MOUNTPOINT)/boot/$$file $(CONTENTS)/pmagic/; done
+	$(SCRIPTS)/syslinux-f-keys pmagic $(CONTENTS)/isolinux $(MOUNTPOINT)/boot/syslinux/message*.txt
 	$(UMOUNT) $(MOUNTPOINT)
-	@echo -e '\e[1m*** pmagic: copying configs\e[0m'
-	cp -v $(CONFIGS)/pmagic.cfg $(CONTENTS)/isolinux/pmagic.cfg
-	cp -v $(CONFIGS)/pmagic*.txt $(CONTENTS)/isolinux/
 	touch pmagic
 
 finnix-latest: base
@@ -83,13 +84,14 @@ finnix-latest: base
 	touch finnix-latest
 
 finnix: finnix-latest
+	@echo -e '\e[1m*** finnix: copying configs\e[0m'
+	cp -v $(CONFIGS)/finnix.cfg $(CONTENTS)/isolinux/finnix.cfg
 	@echo -e '\e[1m*** finnix: installing\e[0m'
 	$(MOUNT) -o loop $(DOWNLOAD)/finnix.iso $(MOUNTPOINT)
 	cp -rv $(MOUNTPOINT)/finnix/ $(CONTENTS)
 	set -e; for file in *.imz hdt.c32 initrd.xz linux linux64 memdisk memtest pci.ids; do cp -v $(MOUNTPOINT)/isolinux/$$file $(CONTENTS)/finnix/; done
+	$(SCRIPTS)/syslinux-f-keys finnix $(CONTENTS)/isolinux $(MOUNTPOINT)/isolinux/f*
 	$(UMOUNT) $(MOUNTPOINT)
-	@echo -e '\e[1m*** finnix: copying configs\e[0m'
-	cp -v $(CONFIGS)/finnix.cfg $(CONTENTS)/isolinux/finnix.cfg
 	touch finnix
 
 sysrcd-latest: base
@@ -98,16 +100,16 @@ sysrcd-latest: base
 	touch sysrcd-latest
 
 sysrcd: sysrcd-latest
+	@echo -e '\e[1m*** sysrcd: copying configs\e[0m'
+	cp -v $(CONFIGS)/sysrcd.cfg $(CONTENTS)/isolinux/sysrcd.cfg
 	@echo -e '\e[1m*** sysrcd: installing\e[0m'
 	rm -rvf $(CONTENTS)/sysrcd
 	mkdir $(CONTENTS)/sysrcd
 	$(MOUNT) -o loop $(DOWNLOAD)/sysrcd.iso $(MOUNTPOINT)
 	set -e; for file in bootdisk bootprog ntpasswd sysrcd.dat sysrcd.md5 version; do cp -rv $(MOUNTPOINT)/$$file $(CONTENTS); done
 	set -e; for file in rescue* altker* initram.igz memdisk netboot; do cp -v $(MOUNTPOINT)/isolinux/$$file $(CONTENTS)/sysrcd; done
+	$(SCRIPTS)/syslinux-f-keys sysrcd $(CONTENTS)/isolinux/ $(MOUNTPOINT)/isolinux/*.msg
 	$(UMOUNT) $(MOUNTPOINT)
-	@echo -e '\e[1m*** sysrcd: copying configs\e[0m'
-	cp -v $(CONFIGS)/sysrcd.cfg $(CONTENTS)/isolinux/sysrcd.cfg
-	cp -v $(CONFIGS)/sysrcd*.msg $(CONFIGS)/ntpass*.msg $(CONTENTS)/isolinux/
 	touch sysrcd
 
 grub4dos-latest: base
@@ -147,14 +149,15 @@ tinycore-latest: base
 	touch tinycore-latest
 
 tinycore: tinycore-latest
+	@echo -e '\e[1m*** tinycore: copying configs\e[0m'
+	cp -v $(CONFIGS)/tiny.cfg $(CONTENTS)/isolinux/
 	@echo -e '\e[1m*** tinycore: installing\e[0m'
 	$(MOUNT) -o loop $(DOWNLOAD)/tinycore.iso $(MOUNTPOINT)
 	rm -rvf $(CONTENTS)/tce $(CONTENTS)/cde
 	cp -rv $(MOUNTPOINT)/cde $(CONTENTS)/
 	set -e; for file in vmlinuz core.gz; do cp -v $(MOUNTPOINT)/boot/$$file $(CONTENTS)/cde; done
+	$(SCRIPTS)/syslinux-f-keys tiny $(CONTENTS)/isolinux/ $(MOUNTPOINT)/boot/isolinux/f*
 	ln -sv "cde" $(CONTENTS)/tce
-	@echo -e '\e[1m*** tinycore: copying configs\e[0m'
-	cp -v $(CONFIGS)/tinycore* $(CONTENTS)/isolinux/
 	$(UMOUNT) $(MOUNTPOINT)
 	touch tinycore
 
@@ -168,6 +171,7 @@ iso: base $(SYSTEMS) syslinux-iso config
 	-V 'AITap Boot CD' \
 	$(CONTENTS)
 	touch iso
+$(IMAGE): iso
 
 install-usb: base $(SYSTEMS) syslinux-usb config
 	@echo -e '\e[1m*** Installing $(CONTENTS) on usb-drive\e[0m'
@@ -186,8 +190,8 @@ config: base syslinux
 	echo "INCLUDE config.cfg" > $(CONTENTS)/isolinux/isolinux.cfg.1
 	for file in $(CONTENTS)/isolinux/*cfg; do echo "INCLUDE $$(basename $$file)" >> $(CONTENTS)/isolinux/isolinux.cfg.1; done
 	mv $(CONTENTS)/isolinux/isolinux.cfg.1 $(CONTENTS)/isolinux/isolinux.cfg
-	cp -v $(CONFIGS)/rus.psf $(CONFIGS)/back.png $(CONFIGS)/config.cfg $(CONTENTS)/isolinux/
-	cp -v $(DOWNLOAD)/syslinux/*menu.c32 $(CONTENTS)/isolinux
+	cp -v $(CONFIGS)/rus.psf $(CONFIGS)/config.cfg $(CONTENTS)/isolinux/
+	cp -v $(DOWNLOAD)/syslinux/menu.c32 $(CONTENTS)/isolinux
 	touch config
 
 # выжигание

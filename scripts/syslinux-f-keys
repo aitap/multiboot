@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+BASENAME=$1
+shift
+TARGET=$1
+shift
+
+i=0
+for f in "$@"
+do
+	i=$((i+1))
+	cp -v $f ${TARGET}/${BASENAME}${i}.msg
+	sed -i "/MENU BEGIN/s/$/\nF${i} ${BASENAME}${i}.msg/" ${TARGET}/${BASENAME}.cfg
+done
+
