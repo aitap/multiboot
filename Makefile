@@ -131,8 +131,8 @@ love:
 debian-latest: base
 	@echo -e '\e[1m*** debian: downloading\e[0m'
 	mkdir -p $(DOWNLOAD)/debian
-	$(WGET) -O $(DOWNLOAD)/debian/debian.tgz $$(wget -qO- "http://cdimage.debian.org/cdimage/unofficial/backports/squeeze/?C=M;O=D" | sed -rn '/netboot-i386/{s#.*href="([^"]+)".*#http://cdimage.debian.org/cdimage/unofficial/backports/squeeze/\1#p;q}')
-	for f in linux initrd.gz; do tar -xvOf $(DOWNLOAD)/debian/debian.tgz ./debian-installer/i386/$$f > $(DOWNLOAD)/debian/$$(basename $$f); done
+	wget -O$(DOWNLOAD)/debian/linux http://cdimage.debian.org/debian/dists/squeeze/main/installer-i386/current/images/netboot/debian-installer/i386/linux
+	wget -O$(DOWNLOAD)/debian/initrd.gz http://cdimage.debian.org/debian/dists/squeeze/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz
 	touch debian-latest
 
 debian: debian-latest
