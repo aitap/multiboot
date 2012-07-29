@@ -73,7 +73,7 @@ pmagic: pmagic-latest
 	$(MOUNT) -o loop $(DOWNLOAD)/pmagic.iso $(MOUNTPOINT)
 	rm -rvf $(CONTENTS)/pmagic
 	cp -rv $(MOUNTPOINT)/pmagic $(CONTENTS)/
-	set -e; for file in mhdd plpbt sgd syslinux/hdt.gz syslinux/memdisk syslinux/memtest syslinux/reboot.c32 chntpw syslinux/ipxe.krn; do cp -rv $(MOUNTPOINT)/boot/$$file $(CONTENTS)/pmagic/; done
+	set -e; for file in mhdd plpbt sgd syslinux/hdt.gz syslinux/memdisk syslinux/memtest syslinux/reboot.c32 chntpw ipxe/ipxe.krn; do cp -rv $(MOUNTPOINT)/boot/$$file $(CONTENTS)/pmagic/; done
 	$(SCRIPTS)/syslinux-f-keys pmagic $(CONTENTS)/isolinux $(MOUNTPOINT)/boot/syslinux/message*.txt
 	$(UMOUNT) $(MOUNTPOINT)
 	touch pmagic
