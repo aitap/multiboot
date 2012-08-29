@@ -89,8 +89,8 @@ finnix: finnix-latest
 	@echo -e '\e[1m*** finnix: installing\e[0m'
 	$(MOUNT) -o loop $(DOWNLOAD)/finnix.iso $(MOUNTPOINT)
 	cp -rv $(MOUNTPOINT)/finnix/ $(CONTENTS)
-	set -e; for file in *.imz hdt.c32 initrd.xz linux linux64 memdisk memtest pci.ids; do cp -v $(MOUNTPOINT)/isolinux/$$file $(CONTENTS)/finnix/; done
-	$(SCRIPTS)/syslinux-f-keys finnix $(CONTENTS)/isolinux $(MOUNTPOINT)/isolinux/f*
+	set -e; for file in *.imz hdt.c32 initrd.xz linux linux64 memdisk memtest pci.ids; do cp -v $(MOUNTPOINT)/boot/x86/$$file $(CONTENTS)/finnix/; done
+	$(SCRIPTS)/syslinux-f-keys finnix $(CONTENTS)/isolinux $(MOUNTPOINT)/boot/x86/f*
 	$(UMOUNT) $(MOUNTPOINT)
 	touch finnix
 
