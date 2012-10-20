@@ -134,8 +134,8 @@ porteus-latest: base
 porteus: porteus-latest
 	@echo -e '\e[1m*** porteus: installing\e[0m'
 	$(MOUNT) -o loop $(DOWNLOAD)/porteus.iso $(MOUNTPOINT)
-	cp -rv $(MOUNTPOINT)/porteus $(TARGET)
-	set -el; for f in vmlinuz initrd.xz; do cp -v $(MOUNTPOINT)/boot/$$f $(TARGET)/porteus; done
+	cp -rv $(MOUNTPOINT)/porteus $(CONTENTS)
+	set -e; for f in vmlinuz initrd.xz; do cp -v $(MOUNTPOINT)/boot/$$f $(CONTENTS)/porteus; done
 	@echo -e '\e[1m*** porteus: copying configs\e[0m'
 	cp -v $(CONFIGS)/porteus.cfg $(CONTENTS)/isolinux/porteus.cfg
 	touch porteus
