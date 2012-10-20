@@ -1,12 +1,11 @@
 Welcome!
 
 This Makefile allows you to build yourself a multiboot cd with fixed amount of components:
- - PartedMagic (http://partedmagic.com)
  - Finnix (http://finnix.org)
  - SystemRescueCD (http://sysresccd.org)
  - GRUB4DOS (http://grub4dos-chenall.googlecode.com)
  - Debian testing netinstall (http://debian.org)
- - TinyCoreLinux (http://distro.ibiblio.org/tinycorelinux/)
+ - Porteus (http://porteus.org/)
 
 Useful make rules:
 

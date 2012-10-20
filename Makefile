@@ -15,7 +15,7 @@ MOUNTPOINT := /mnt
 MOUNT := mount
 UMOUNT := umount
 
-SYSTEMS := pmagic finnix sysrcd grub4dos debian tinycore
+SYSTEMS := porteus finnix sysrcd grub4dos debian
 
 .PHONY: all clean syslinux-usb install-usb burn
 
@@ -60,23 +60,6 @@ syslinux-usb: syslinux base
 	@echo -e '\e[1mYou may want to install mbr on your USB drive\e[0m'
 
 # различные ОС, отдельно скачивание и установка
-
-pmagic-latest: base
-	@echo -e '\e[1m*** pmagic: downloading\e[0m'
-	$(WGET) -O$(DOWNLOAD)/pmagic.iso $(shell wget -qO- 'http://partedmagic.com/doku.php?id=downloads' | sed -rn '/href=".*pmagic[0-9_]*\.iso/{s/.*href="([^"]+)".*/\1/p;q}')
-	touch pmagic-latest
-
-pmagic: pmagic-latest
-	@echo -e '\e[1m*** pmagic: copying configs\e[0m'
-	cp -v $(CONFIGS)/pmagic.cfg $(CONTENTS)/isolinux/pmagic.cfg
-	@echo -e '\e[1m*** pmagic: installing\e[0m'
-	$(MOUNT) -o loop $(DOWNLOAD)/pmagic.iso $(MOUNTPOINT)
-	rm -rvf $(CONTENTS)/pmagic
-	cp -rv $(MOUNTPOINT)/pmagic $(CONTENTS)/
-	set -e; for file in mhdd plpbt sgd syslinux/hdt.gz syslinux/memdisk syslinux/memtest syslinux/reboot.c32 chntpw ipxe/ipxe.krn; do cp -rv $(MOUNTPOINT)/boot/$$file $(CONTENTS)/pmagic/; done
-	$(SCRIPTS)/syslinux-f-keys pmagic $(CONTENTS)/isolinux $(MOUNTPOINT)/boot/syslinux/message*.txt
-	$(UMOUNT) $(MOUNTPOINT)
-	touch pmagic
 
 finnix-latest: base
 	@echo -e '\e[1m*** finnix: downloading\e[0m'
@@ -143,23 +126,19 @@ debian: debian-latest
 	cp -v $(CONFIGS)/debian.cfg $(CONTENTS)/isolinux/debian.cfg
 	touch debian
 
-tinycore-latest: base
-	@echo -e '\e[1m*** tinycore: downloading\e[0m'
-	$(WGET) -O$(DOWNLOAD)/tinycore.iso http://distro.ibiblio.org/tinycorelinux/4.x/x86/release/TinyCore-current.iso
-	touch tinycore-latest
+porteus-latest: base
+	@echo -e '\e[1m*** porteus: downloading\e[0m'
+	wget -O$(DOWNLOAD)/porteus.iso $(shell wget -qO- http://www.ponce.cc/porteus/i486/current/ | sed -rn '/Porteus-v[0-9.]+-i486\.iso/s|.*href="([^"]+)".*|http://www.ponce.cc/porteus/i486/current/\1|p')
+	touch porteus-latest
 
-tinycore: tinycore-latest
-	@echo -e '\e[1m*** tinycore: copying configs\e[0m'
-	cp -v $(CONFIGS)/tiny.cfg $(CONTENTS)/isolinux/
-	@echo -e '\e[1m*** tinycore: installing\e[0m'
-	$(MOUNT) -o loop $(DOWNLOAD)/tinycore.iso $(MOUNTPOINT)
-	rm -rvf $(CONTENTS)/tce $(CONTENTS)/cde
-	cp -rv $(MOUNTPOINT)/cde $(CONTENTS)/
-	set -e; for file in vmlinuz core.gz; do cp -v $(MOUNTPOINT)/boot/$$file $(CONTENTS)/cde; done
-	$(SCRIPTS)/syslinux-f-keys tiny $(CONTENTS)/isolinux/ $(MOUNTPOINT)/boot/isolinux/f*
-	ln -sv "cde" $(CONTENTS)/tce
-	$(UMOUNT) $(MOUNTPOINT)
-	touch tinycore
+porteus: porteus-latest
+	@echo -e '\e[1m*** porteus: installing\e[0m'
+	$(MOUNT) -o loop $(DOWNLOAD)/porteus.iso $(MOUNTPOINT)
+	cp -rv $(MOUNTPOINT)/porteus $(TARGET)
+	set -el; for f in vmlinuz initrd.xz; do cp -v $(MOUNTPOINT)/boot/$$f $(TARGET)/porteus; done
+	@echo -e '\e[1m*** porteus: copying configs\e[0m'
+	cp -v $(CONFIGS)/porteus.cfg $(CONTENTS)/isolinux/porteus.cfg
+	touch porteus
 
 # сборка образа, установка на флешку
 
