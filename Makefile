@@ -37,10 +37,10 @@ clean:
 
 syslinux: base
 	@echo -e '\e[1m*** syslinux: downloading & extracting\e[0m'
-	URL=$$(wget -qO- 'http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D' | sed -rn '/.bz2/{s/.*href="([^"]+)".*/\1/p;q}');\
-	$(WGET) -O$(DOWNLOAD)/syslinux.tar.bz2 http://www.kernel.org/pub/linux/utils/boot/syslinux/$$URL;\
+	URL=$$(wget -qO- 'http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D' | sed -rn '/syslinux-4\.[0-9]+\.tar\.xz/{s/.*href="([^"]+)".*/\1/p;q}');\
+	$(WGET) -O$(DOWNLOAD)/syslinux.tar.xz http://www.kernel.org/pub/linux/utils/boot/syslinux/$$URL;\
 	mkdir -pv $(DOWNLOAD)/syslinux;\
-	set -e; for file in core/isolinux.bin linux/syslinux-nomtools com32/menu/menu.c32 com32/menu/vesamenu.c32; do tar -xvOf $(DOWNLOAD)/syslinux.tar.bz2 $$(basename $$URL .tar.bz2)/$$file > $(DOWNLOAD)/syslinux/$$(basename $$file); done
+	set -e; for file in core/isolinux.bin linux/syslinux-nomtools com32/menu/menu.c32 com32/menu/vesamenu.c32; do tar -xvOf $(DOWNLOAD)/syslinux.tar.xz $$(basename $$URL .tar.xz)/$$file > $(DOWNLOAD)/syslinux/$$(basename $$file); done
 	chmod +x $(DOWNLOAD)/syslinux/syslinux-nomtools
 	touch syslinux
 
