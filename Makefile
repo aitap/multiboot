@@ -19,67 +19,82 @@ SYSTEMS := porteus finnix sysrcd grub4dos debian
 
 .PHONY: all clean syslinux-usb install-usb burn
 
+# макросы
+
+# url, regexp, save_to
+define LOAD_LINK
+	@echo -e '\e[1m[ DOWNLOAD ]\e[0m $(1) -> $(2) -> $(3)'
+	@perl "$(SCRIPTS)/download.pl" "$(1)" "$(2)" "$(DOWNLOAD)/$(3)"
+endef
+
+# iso
+define AUTOMOUNT
+	@echo -e '\e[1m[ MOUNT ]\e[0m $(1)'
+	@$(MOUNT) -o loop "$(DOWNLOAD)/$(1)" "$(MOUNTPOINT)"
+endef
+
+# fullname, target_config, (src_config)
+define AUTOCOPY
+	@echo -e '\e[1m[ AUTOCOPY ]\e[0m -> "$(1)"'
+	@perl "$(SCRIPTS)/syslinux-autocopy.pm" -s "$(MOUNTPOINT)" -t "$(CONTENTS)" -c "$(3)" -a "$(2)" -n "$(1)"
+endef
+
+define AUTOUNMOUNT
+	@echo -e '\e[1m[ UNMOUNT ]\e[0m'
+	@$(UMOUNT) $(MOUNTPOINT)
+endef
+
 # базовые вещи
 
 all: base $(SYSTEMS) config
 
 base:
-	@echo -e '\e[1m*** Checking for base directories\e[0m'
 	mkdir -pv $(CONTENTS) $(DOWNLOAD) $(CONTENTS)/isolinux
 	touch base
 
 clean:
-	@echo -e '\e[1m*** Cleaning all\e[0m'
 	rm -rvf $(CONTENTS) $(DOWNLOAD)
 	rm -rvf base syslinux syslinux-iso syslinux-usb $(SYSTEMS) $(foreach sys,$(SYSTEMS),$(sys)-latest) iso config
 
 # загрузчик
 
 syslinux: base
-	@echo -e '\e[1m*** syslinux: downloading & extracting\e[0m'
-	URL=$$(wget -qO- 'http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D' | sed -rn '/syslinux-4\.[0-9]+\.tar\.xz/{s/.*href="([^"]+)".*/\1/p;q}');\
-	$(WGET) -O$(DOWNLOAD)/syslinux.tar.xz http://www.kernel.org/pub/linux/utils/boot/syslinux/$$URL;\
-	mkdir -pv $(DOWNLOAD)/syslinux;\
-	set -e; for file in core/isolinux.bin linux/syslinux-nomtools com32/menu/menu.c32 com32/menu/vesamenu.c32; do tar -xvOf $(DOWNLOAD)/syslinux.tar.xz $$(basename $$URL .tar.xz)/$$file > $(DOWNLOAD)/syslinux/$$(basename $$file); done
-	chmod +x $(DOWNLOAD)/syslinux/syslinux-nomtools
+	mkdir -pv "$(DOWNLOAD)/syslinux"
+	$(call LOAD_LINK,http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D,syslinux-4\.[0-9]+\.tar\.xz,syslinux.tar.xz)
+	set -e; for file in core/isolinux.bin linux/syslinux-nomtools com32/menu/menu.c32 com32/menu/vesamenu.c32; do tar --wildcards -xvOf "$(DOWNLOAD)/syslinux.tar.xz" "syslinux-*/$$file" > $(DOWNLOAD)/syslinux/$$(basename $$file); done
+	chmod +x "$(DOWNLOAD)/syslinux/syslinux-nomtools"
 	touch syslinux
 
 syslinux-iso: syslinux base
-	@echo -e '\e[1m*** isolinux: installing\e[0m'
-	cp $(DOWNLOAD)/syslinux/isolinux.bin $(CONTENTS)/isolinux/
+	cp "$(DOWNLOAD)/syslinux/isolinux.bin" "$(CONTENTS)/isolinux/"
 	touch syslinux-iso
 
 syslinux-usb: syslinux base
-	@echo -e '\e[1m*** syslinux: installing\e[0m'
-	@if test -z $(TARGET); then /bin/echo -e '\e[1m!!! You have to define TARGET!\e[0m'; exit 1; fi
-	blkid -t TYPE="vfat" $(TARGET)
-	$(MOUNT) $(TARGET) $(MOUNTPOINT)
-	mkdir -pv $(MOUNTPOINT)/isolinux
-	$(UMOUNT) $(MOUNTPOINT)
-	$(DOWNLOAD)/syslinux/syslinux-nomtools -d isolinux -i $(TARGET)
-	@echo -e '\e[1mYou may want to install mbr on your USB drive\e[0m'
+	@if test -z "$(TARGET)"; then /bin/echo -e '\e[1m!!! You have to define TARGET!\e[0m'; exit 1; fi
+	blkid -t TYPE="vfat" "$(TARGET)"
+	$(MOUNT) "$(TARGET)" "$(MOUNTPOINT)"
+	mkdir -pv "$(MOUNTPOINT)/isolinux"
+	$(UMOUNT) "$(MOUNTPOINT)"
+	"$(DOWNLOAD)/syslinux/syslinux-nomtools" -d isolinux -i "$(TARGET)"
 
 # различные ОС, отдельно скачивание и установка
 
 finnix-latest: base
-	@echo -e '\e[1m*** finnix: downloading\e[0m'
-	$(WGET) -O$(DOWNLOAD)/finnix.iso $(shell wget -qO- http://finnix.org/releases/current/ | sed -rn '/"finnix-[0-9]+.iso"/{s#.*"(finnix-[0-9]+.iso)".*#http://finnix.org/releases/current/\1#;p}')
+	$(call LOAD_LINK,http://finnix.org/releases/current/,finnix-[0-9]+.iso,finnix.iso)
 	touch finnix-latest
 
 finnix: finnix-latest
-	@echo -e '\e[1m*** finnix: copying configs\e[0m'
-	cp -v $(CONFIGS)/finnix.cfg $(CONTENTS)/isolinux/finnix.cfg
-	@echo -e '\e[1m*** finnix: installing\e[0m'
-	$(MOUNT) -o loop $(DOWNLOAD)/finnix.iso $(MOUNTPOINT)
-	cp -rv $(MOUNTPOINT)/finnix/ $(CONTENTS)
-	set -e; for file in *.imz hdt.c32 initrd.xz linux linux64 memdisk memtest pci.ids; do cp -v $(MOUNTPOINT)/boot/x86/$$file $(CONTENTS)/finnix/; done
-	$(SCRIPTS)/syslinux-f-keys finnix $(CONTENTS)/isolinux $(MOUNTPOINT)/boot/x86/f*
-	$(UMOUNT) $(MOUNTPOINT)
-	touch finnix
+	#cp -v $(CONFIGS)/finnix.cfg $(CONTENTS)/isolinux/finnix.cfg
+	$(call AUTOMOUNT,finnix.iso)
+	$(call AUTOCOPY,Finnix,$(CONTENTS)/isolinux/finnix.cfg)
+	#cp -rv $(MOUNTPOINT)/finnix/ $(CONTENTS)
+	#set -e; for file in *.imz hdt.c32 initrd.xz linux linux64 memdisk memtest pci.ids; do cp -v $(MOUNTPOINT)/boot/x86/$$file $(CONTENTS)/finnix/; done
+	#$(SCRIPTS)/syslinux-f-keys finnix $(CONTENTS)/isolinux $(MOUNTPOINT)/boot/x86/f*
+	$(call AUTOUNMOUNT)
+	#touch finnix
 
 sysrcd-latest: base
 	@echo -e '\e[1m*** sysrcd: downloading\e[0m'
-	$(WGET) -O$(DOWNLOAD)/sysrcd.iso $(shell wget -qO- http://sysresccd.org/Download | sed -rn '/href=.*iso/{s/.*href="([^"]+)".*/\1/p;q}')
 	touch sysrcd-latest
 
 sysrcd: sysrcd-latest
