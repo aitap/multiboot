@@ -10,21 +10,22 @@ my %root_directives = (
 	label => sub { push @{$_[0]}, { label => $_[1] } },
 	kernel => sub { $_[0][-1]{kernel} = $_[1] },
 	linux => sub { $_[0][-1]{kernel} = $_[1] },
-	append => sub { $_[1] =~ s/\binitrd=(\S+)/push @{$_[0][-1]{initrd}},$1; ""/ge; $_[0][-1]{append} = $_[1]; },
+	append => sub { $_[1] =~ s/\binitrd=(\S+)/push @{$_[0][-1]{initrd}},(split m|,|,$1); ""/ge; $_[0][-1]{append} = $_[1]; },
 	initrd => sub { push @{$_[0][-1]{initrd}}, $_[1] },
 	menu => sub { _parse_menu_line($_[0], $_[1]) },
 	text => sub {
 		croak "TEXT <what?>" unless "help" eq lc $_[1];
 		$_[0][-1]{help} .= $_ while defined ($_ = readline $_[0][0]) && lc $_ ne "endtext\n";
 	},
+	map { my $n = $_; ( "f$n", sub { $_[0][-1]{f}[$n] = $_[1]; } ) } (1..12),
 );
-# TODO: F*
 
 my %menu_directives = (
 	label => sub { $_[0]->[-1]{menu}{label} = $_[1] },
 	begin => sub { push @{$_[0]}, { menu => { name => $_[1], labels => _parse($_[0][0]) } }; },
 	title => sub { $_[0][-1]{menu}{title} = $_[1] },
 	exit => sub { $_[0][-1]{menu}{exit} = 1 },
+	hide => sub { $_[0][-1]{menu}{hide} = 1 },
 );
 
 sub parse_file {
@@ -43,8 +44,7 @@ sub _parse {
 		$line =~ s/^\s+//;
 		my @keywords = split /\s+/,$line,2;
 		shift @keywords until $keywords[0] or !@keywords;
-		next if !@keywords;
-		next if $keywords[0] =~ /^#/; # ignore comments
+		next if !@keywords or $keywords[0] =~ /^#/; # ignore comments
 		last if $line =~ /^\s*menu\s+end\s*$/i; # XXX any real ways to return from recursively-called function?
 		$root_directives{lc $keywords[0]}->($config, $keywords[1]) if defined $root_directives{lc $keywords[0]};
 	}
@@ -75,17 +75,19 @@ sub _dump {
 			next unless $_->{kernel} || $_->{menu};
 			print "\t"x$indent,"MENU TITLE ",$_->{menu}{title},"\n" if $_->{menu}{title};
 			print "\t"x$indent,"LABEL ",$_->{label},"\n";
+			for my $n (1..12) { $_->{f}[$n] && print "\t"x$indent,"F$n ",$_->{f}[$n],"\n" }
 			$indent++;
 			print "\t"x$indent,"MENU LABEL ", $_->{menu}{label}, "\n" if $_->{menu}{label};
 			print "\t"x$indent,"MENU EXIT\n" if $_->{menu}{exit};
-			print "\t"x$indent,"TEXT HELP\n", $_->{help}, "\nENDTEXT\n" if $_->{help};
+			print "\t"x$indent,"MENU HIDE\n" if $_->{menu}{hide};
+			print "\t"x$indent,"TEXT HELP\n", $_->{help}, "ENDTEXT\n" if $_->{help};
 			print "\t"x$indent,"KERNEL ", $_->{kernel}, "\n" if $_->{kernel};
 			print "\t"x$indent,"APPEND ", $_->{append}, "\n" if $_->{append};
 			print "\t"x$indent,"INITRD ", join(",",@{$_->{initrd}}), "\n" if $_->{initrd} && @{$_->{initrd}};
 			$indent--;
 			print "\n";
-		} elsif (defined $_->{menu}{name}) {
-			print "\t"x$indent,"MENU BEGIN ",$_->{menu}{name},"\n";
+		} elsif (defined $_->{menu}{labels}) {
+			print "\t"x$indent,"MENU BEGIN ",$_->{menu}{name}||"","\n";
 			print "\t"x($indent+1),"MENU TITLE ",$_->{menu}{title},"\n" if $_->{menu}{title};
 			_dump($_->{menu}{labels},$indent+1);
 			print "\t"x$indent,"MENU END\n";
@@ -137,11 +139,21 @@ my $process;
 			my $copy = sub {
 				return unless $_[0];
 				warn "overwriting $_[0]\n" if -e "$target/$dirname/".basename($_[0]);
-				copy(($_[0] =~ m|^/| ? $source : dirname($config))."/".$_[0],"$target/$dirname/".basename($_[0]))
-					or die "$_[0]: $!\n";
+				copy(
+					($_[0] =~ m|^/| ? $source : dirname($config))."/".$_[0],
+					"$target/$dirname/".basename($_[0])
+				) or die "$_[0]: $!\n";
 				$_[0] = "/$dirname/".basename($_[0]);
 			};
+			for my $n (1..12) { $copy->($_->{f}[$n]); }
 			$copy->($_) for ($_->{kernel}, $_->{initrd} ? @{$_->{initrd}} : () );
+			next unless $_->{append};
+			for my $item (split /\s+/,$_->{append}) {
+				if (-r ($item =~ m|^/| ? $source : dirname($config))."/".(my $file = $item)) {
+					$copy->($item);
+					$_->{append} =~ s/\Q$file/$item/;
+				}
+			};
 		} elsif ($_->{menu}{name}) {
 			$process->($_->{menu}{labels});
 		}
