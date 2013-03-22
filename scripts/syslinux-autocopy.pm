@@ -15,7 +15,7 @@ my %root_directives = (
 	menu => sub { _parse_menu_line($_[0], $_[1]) },
 	text => sub {
 		croak "TEXT <what?>" unless "help" eq lc $_[1];
-		$_[0][-1]{help} .= $_ while defined ($_ = <{$_[0][0]}>) && lc $_ ne "endtext"
+		$_[0][-1]{help} .= $_ while defined ($_ = readline $_[0][0]) && lc $_ ne "endtext\n";
 	},
 );
 # TODO: F*
@@ -24,6 +24,7 @@ my %menu_directives = (
 	label => sub { $_[0]->[-1]{menu}{label} = $_[1] },
 	begin => sub { push @{$_[0]}, { menu => { name => $_[1], labels => _parse($_[0][0]) } }; },
 	title => sub { $_[0][-1]{menu}{title} = $_[1] },
+	exit => sub { $_[0][-1]{menu}{exit} = 1 },
 );
 
 sub parse_file {
@@ -38,8 +39,11 @@ sub _parse {
 	my ($fh) = @_;
 	my $config = [$fh, {label => "default"}];
 	while (my $line = <$fh>) {
-		my @keywords = split /\s+/,$line;
-		next unless @keywords;
+		chomp $line;
+		$line =~ s/^\s+//;
+		my @keywords = split /\s+/,$line,2;
+		shift @keywords until $keywords[0] or !@keywords;
+		next if !@keywords;
 		next if $keywords[0] =~ /^#/; # ignore comments
 		last if $line =~ /^\s*menu\s+end\s*$/i; # XXX any real ways to return from recursively-called function?
 		$root_directives{lc $keywords[0]}->($config, $keywords[1]) if defined $root_directives{lc $keywords[0]};
@@ -66,20 +70,21 @@ sub save {
 
 sub _dump {
 	my ($data, $indent) = @_;
-	for my $label (@$data) {
-		if ($_->{label}) {
-			next unless $_->{kernel};
+	for (@$data) {
+		if (defined $_->{label}) {
+			next unless $_->{kernel} || $_->{menu};
+			print "\t"x$indent,"MENU TITLE ",$_->{menu}{title},"\n" if $_->{menu}{title};
 			print "\t"x$indent,"LABEL ",$_->{label},"\n";
 			$indent++;
 			print "\t"x$indent,"MENU LABEL ", $_->{menu}{label}, "\n" if $_->{menu}{label};
-			print "\t"x$indent,"MENU TITLE ",$_->{menu}{title},"\n" if $_->{menu}{title};
+			print "\t"x$indent,"MENU EXIT\n" if $_->{menu}{exit};
 			print "\t"x$indent,"TEXT HELP\n", $_->{help}, "\nENDTEXT\n" if $_->{help};
-			print "\t"x$indent,"KERNEL ", $_->{kernel}, "\n";
+			print "\t"x$indent,"KERNEL ", $_->{kernel}, "\n" if $_->{kernel};
 			print "\t"x$indent,"APPEND ", $_->{append}, "\n" if $_->{append};
-			print "\t"x$indent,"INITRD ", join ",",@{$_->{initrd}}, "\n" if @{$_->{initrd}};
+			print "\t"x$indent,"INITRD ", join(",",@{$_->{initrd}}), "\n" if $_->{initrd} && @{$_->{initrd}};
 			$indent--;
 			print "\n";
-		} elsif ($_->{menu}{name}) {
+		} elsif (defined $_->{menu}{name}) {
 			print "\t"x$indent,"MENU BEGIN ",$_->{menu}{name},"\n";
 			print "\t"x($indent+1),"MENU TITLE ",$_->{menu}{title},"\n" if $_->{menu}{title};
 			_dump($_->{menu}{labels},$indent+1);
@@ -100,7 +105,7 @@ require File::Path;
 File::Path->import("make_path");
 
 require File::Basename;
-File::Basename->import("basename");
+File::Basename->import(qw/basename dirname/);
 
 my ($source, $target, $config, $name, $append);
 GetOptions(
@@ -110,6 +115,9 @@ GetOptions(
 	'name=s'   => \$name,
 	'addconfig=s' => \$append,
 ) || die "Usage: $0 -s <source dir> -t <target dir> -c <source config file> -a <target config file> -n <submenu name>\n";
+for ($source, $target, $name, $append) {
+	die "Usage: $0 -s <source dir> -t <target dir> -c <source config file> -a <target config file> -n <submenu name>\n" unless $_;
+}
 
 unless ($config) {
 	for my $try (qw(isolinux.cfg isolinux/isolinux.cfg boot/isolinux/isolinux.cfg)) {
@@ -122,13 +130,24 @@ die "No config found\n" unless -f $config;
 make_path("$target/$dirname");
 
 my $data = parse_file($config);
-for my $label (@$data) {
-	for my $key (qw/kernel initrd/) {
-		next unless $_->{$key};
-		die "$_->{$key} already exists\n" if -e "$target/$dirname/".basename($_->{$key});
-		copy(($_->{$key} =~ m|^/| ? $source : dirname $config)."/".$_->{$key},"$target/$dirname/".basename($_->{key}));
-		$_->{$key} = "/$dirname/".basename $_->{$key};
+my $process;
+($process = sub {
+	for (@{$_[0]}) {
+		if ($_->{label}) {
+			my $copy = sub {
+				return unless $_[0];
+				warn "overwriting $_[0]\n" if -e "$target/$dirname/".basename($_[0]);
+				copy(($_[0] =~ m|^/| ? $source : dirname($config))."/".$_[0],"$target/$dirname/".basename($_[0]))
+					or die "$_[0]: $!\n";
+				$_[0] = "/$dirname/".basename($_[0]);
+			};
+			$copy->($_) for ($_->{kernel}, $_->{initrd} ? @{$_->{initrd}} : () );
+		} elsif ($_->{menu}{name}) {
+			$process->($_->{menu}{labels});
+		}
 	}
-}
+})->($data);
+
+shift @$data unless $data->[0]{kernel} || $data->[0]{menu};
 
 save([ { menu => { title => $name, name => $dirname, labels => $data } }],$append);
