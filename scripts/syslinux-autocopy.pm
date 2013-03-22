@@ -8,16 +8,18 @@ use Carp;
 my %root_directives = (
 	include => sub { push @{$_[0]}, @{ parse_file($_[1]) } },
 	label => sub { push @{$_[0]}, { label => $_[1] } },
-	kernel => sub { $_[0][-1]{kernel} = $_[1] },
-	linux => sub { $_[0][-1]{kernel} = $_[1] },
-	append => sub { $_[1] =~ s/\binitrd=(\S+)/push @{$_[0][-1]{initrd}},(split m|,|,$1); ""/ge; $_[0][-1]{append} = $_[1]; },
+	(map { my $n = $_; ( $n, sub { $_[0][-1]{kernel} = $_[1] } ) } (qw/kernel linux com32/)),
+	append => sub {
+		$_[1] =~ s/\binitrd=(\S+)/push @{$_[0][-1]{initrd}},(split m|,|,$1); ""/ge;
+		$_[0][-1]{append} = $_[1];
+	},
 	initrd => sub { push @{$_[0][-1]{initrd}}, $_[1] },
 	menu => sub { _parse_menu_line($_[0], $_[1]) },
 	text => sub {
 		croak "TEXT <what?>" unless "help" eq lc $_[1];
 		$_[0][-1]{help} .= $_ while defined ($_ = readline $_[0][0]) && lc $_ ne "endtext\n";
 	},
-	map { my $n = $_; ( "f$n", sub { $_[0][-1]{f}[$n] = $_[1]; } ) } (1..12),
+	(map { my $n = $_; ( "f$n", sub { $_[0][-1]{f}[$n] = $_[1]; } ) } (1..12)),
 );
 
 my %menu_directives = (
@@ -38,7 +40,7 @@ sub parse_file {
 
 sub _parse {
 	my ($fh) = @_;
-	my $config = [$fh, {label => "default"}];
+	my $config = [$fh, {}];
 	while (my $line = <$fh>) {
 		chomp $line;
 		$line =~ s/^\s+//;
@@ -71,11 +73,16 @@ sub save {
 sub _dump {
 	my ($data, $indent) = @_;
 	for (@$data) {
-		if (defined $_->{label}) {
-			next unless $_->{kernel} || $_->{menu};
+		if (defined $_->{menu}{labels}) {
+			print "\t"x$indent,"MENU BEGIN ",$_->{menu}{name}||"","\n";
+			print "\t"x($indent+1),"MENU TITLE ",$_->{menu}{title},"\n" if $_->{menu}{title};
+			_dump($_->{menu}{labels},$indent+1);
+			print "\t"x$indent,"MENU END\n";
+		} else {
 			print "\t"x$indent,"MENU TITLE ",$_->{menu}{title},"\n" if $_->{menu}{title};
-			print "\t"x$indent,"LABEL ",$_->{label},"\n";
 			for my $n (1..12) { $_->{f}[$n] && print "\t"x$indent,"F$n ",$_->{f}[$n],"\n" }
+			next unless $_->{label};
+			print "\t"x$indent,"LABEL ",$_->{label},"\n";
 			$indent++;
 			print "\t"x$indent,"MENU LABEL ", $_->{menu}{label}, "\n" if $_->{menu}{label};
 			print "\t"x$indent,"MENU EXIT\n" if $_->{menu}{exit};
@@ -86,11 +93,6 @@ sub _dump {
 			print "\t"x$indent,"INITRD ", join(",",@{$_->{initrd}}), "\n" if $_->{initrd} && @{$_->{initrd}};
 			$indent--;
 			print "\n";
-		} elsif (defined $_->{menu}{labels}) {
-			print "\t"x$indent,"MENU BEGIN ",$_->{menu}{name}||"","\n";
-			print "\t"x($indent+1),"MENU TITLE ",$_->{menu}{title},"\n" if $_->{menu}{title};
-			_dump($_->{menu}{labels},$indent+1);
-			print "\t"x$indent,"MENU END\n";
 		}
 	}
 }
@@ -132,34 +134,35 @@ die "No config found\n" unless -f $config;
 make_path("$target/$dirname");
 
 my $data = parse_file($config);
-my $process;
-($process = sub {
+
+sub process {
 	for (@{$_[0]}) {
 		if ($_->{label}) {
-			my $copy = sub {
-				return unless $_[0];
-				warn "overwriting $_[0]\n" if -e "$target/$dirname/".basename($_[0]);
-				copy(
-					($_[0] =~ m|^/| ? $source : dirname($config))."/".$_[0],
-					"$target/$dirname/".basename($_[0])
-				) or die "$_[0]: $!\n";
-				$_[0] = "/$dirname/".basename($_[0]);
-			};
-			for my $n (1..12) { $copy->($_->{f}[$n]); }
-			$copy->($_) for ($_->{kernel}, $_->{initrd} ? @{$_->{initrd}} : () );
+			for my $n (1..12) { test_copy($_->{f}[$n]); }
+			test_copy($_) for ($_->{kernel}, $_->{initrd} ? @{$_->{initrd}} : () );
 			next unless $_->{append};
 			for my $item (split /\s+/,$_->{append}) {
 				if (-r ($item =~ m|^/| ? $source : dirname($config))."/".(my $file = $item)) {
-					$copy->($item);
+					test_copy($item);
 					$_->{append} =~ s/\Q$file/$item/;
 				}
 			};
-		} elsif ($_->{menu}{name}) {
-			$process->($_->{menu}{labels});
+		} elsif ($_->{menu}{labels}) {
+			process($_->{menu}{labels});
 		}
 	}
-})->($data);
+}
 
-shift @$data unless $data->[0]{kernel} || $data->[0]{menu};
+sub test_copy {
+	return unless $_[0];
+	warn "overwriting $_[0]\n" if -e "$target/$dirname/".basename($_[0]);
+	copy(
+		($_[0] =~ m|^/| ? $source : dirname($config))."/".$_[0],
+		"$target/$dirname/".basename($_[0])
+	) or die "$_[0]: $!\n";
+	$_[0] = "/$dirname/".basename($_[0]);
+}
+
+process($data);
 
 save([ { menu => { title => $name, name => $dirname, labels => $data } }],$append);

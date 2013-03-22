@@ -97,7 +97,7 @@ sysrcd: sysrcd-latest
 	$(call AUTOCOPY,SystemRescueCD,sysrcd.cfg)
 	mkdir -p "$(CONTENTS)/sysrcd"
 	set -e;\
-	for file in bootdisk ntpasswd sysrcd.dat sysrcd.md5 version;\
+	for file in sysrcd.dat sysrcd.md5 version;\
 		do cp -rv "$(MOUNTPOINT)/$$file" "$(CONTENTS)";\
 	done
 	$(call AUTOUNMOUNT)
@@ -166,7 +166,5 @@ config: base syslinux
 	echo "INCLUDE config.cfg" > "$(CONTENTS)/isolinux/isolinux.cfg.1"
 	for file in "$(CONTENTS)/isolinux/"*.cfg; do echo "INCLUDE $$(basename $$file)" >> "$(CONTENTS)/isolinux/isolinux.cfg.1"; done
 	mv "$(CONTENTS)/isolinux/isolinux.cfg.1" "$(CONTENTS)/isolinux/isolinux.cfg"
-	# no more rus.psf?
-	cp -v "$(CONFIGS)/rus.psf" "$(CONFIGS)/config.cfg" "$(CONTENTS)/isolinux/"
-	cp -v "$(DOWNLOAD)/syslinux/menu.c32" "$(CONTENTS)/isolinux"
+	cp -v "$(DOWNLOAD)/syslinux/menu.c32" "$(CONFIGS)/config.cfg" "$(CONTENTS)/isolinux/"
 	touch config
