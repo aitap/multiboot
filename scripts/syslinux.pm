@@ -81,10 +81,10 @@ sub _dump {
 		} else {
 			print "\t"x$indent,"MENU TITLE ",$_->{menu}{title},"\n" if $_->{menu}{title};
 			for my $n (1..12) { $_->{f}[$n] && print "\t"x$indent,"F$n ",$_->{f}[$n],"\n" }
-			next unless $_->{label};
-			print "\t"x$indent,"LABEL ",$_->{label},"\n";
+			print "\t"x$indent,"LABEL ",$_->{label},"\n" if $_->{label};
 			$indent++;
 			print "\t"x$indent,"MENU LABEL ", $_->{menu}{label}, "\n" if $_->{menu}{label};
+			next unless $_->{label};
 			print "\t"x$indent,"MENU EXIT\n" if $_->{menu}{exit};
 			print "\t"x$indent,"MENU HIDE\n" if $_->{menu}{hide};
 			print "\t"x$indent,"TEXT HELP\n", $_->{help}, "ENDTEXT\n" if $_->{help};

@@ -34,7 +34,7 @@ endef
 # fullname, target_config, (src_config)
 define AUTOCOPY
 	@echo -e '\e[1m[ AUTOCOPY ]\e[0m -> "$(1)"'
-	@perl "$(SCRIPTS)/syslinux-autocopy.pm" -s "$(MOUNTPOINT)" -t "$(CONTENTS)" -c "$(3)" -a "$(CONTENTS)/isolinux/$(2)" -n "$(1)"
+	@perl "$(SCRIPTS)/syslinux.pm" -s "$(MOUNTPOINT)" -t "$(CONTENTS)" -c "$(3)" -a "$(CONTENTS)/isolinux/$(2)" -n "$(1)"
 endef
 
 define AUTOUNMOUNT
