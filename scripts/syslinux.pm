@@ -137,8 +137,8 @@ my $data = parse_file($config);
 
 sub process {
 	for (@{$_[0]}) {
+		for my $n (1..12) { test_copy($_->{f}[$n]); }
 		if ($_->{label}) {
-			for my $n (1..12) { test_copy($_->{f}[$n]); }
 			test_copy($_) for ($_->{kernel}, $_->{initrd} ? @{$_->{initrd}} : () );
 			next unless $_->{append};
 			for my $item (split /\s+/,$_->{append}) {
