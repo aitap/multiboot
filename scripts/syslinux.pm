@@ -142,7 +142,7 @@ sub process {
 			test_copy($_) for ($_->{kernel}, $_->{initrd} ? @{$_->{initrd}} : () );
 			next unless $_->{append};
 			for my $item (split /\s+/,$_->{append}) {
-				if (-r ($item =~ m|^/| ? $source : dirname($config))."/".(my $file = $item)) {
+				if (!find_label($_[0],$item) and -r ($item =~ m|^/| ? $source : dirname($config))."/".(my $file = $item)) {
 					test_copy($item);
 					$_->{append} =~ s/\Q$file/$item/;
 				}
@@ -151,6 +151,12 @@ sub process {
 			process($_->{menu}{labels});
 		}
 	}
+}
+
+sub find_label {
+	my ($tree, $label) = @_;
+	return 1 if grep { $_->{label} and $_->{label} eq $label } @$tree;
+	return grep { $_ } map { find_label($_->{menu}{labels}, $label) } grep { $_->{menu}{labels} } @$tree;
 }
 
 sub test_copy {
