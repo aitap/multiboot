@@ -84,7 +84,9 @@ finnix: finnix-latest
 	$(call AUTOMOUNT,finnix.iso)
 	$(call AUTOCOPY,Finnix,finnix.cfg)
 	cp -rv "$(MOUNTPOINT)/finnix/" "$(CONTENTS)"
-	cp -v "$(MOUNTPOINT)/boot/x86/pci.ids" "$(CONTENTS)/finnix/"
+	perl "-I$(SCRIPTS)" -msyslinux -MFile::Copy=cp -MFile::Basename=basename -MData::Dumper -e \
+	'$$m = syslinux::parse_file($$ARGV[1]."/isolinux/finnix.cfg"); sub fix { for (@{$$_[0]}) { $$_->{append} =~ s|(?<=pciids=)(\S+)|cp $$ARGV[0]."/".$$1, $$ARGV[1]."/finnix/".basename($$1); "/finnix/".basename($$1)|e if $$_->{append}; fix($$_->{menu}{labels}) if $$_->{menu}{labels}; }}; fix($$m); syslinux::save($$m,$$ARGV[1]."/isolinux/finnix.cfg");' \
+	"$(MOUNTPOINT)" "$(CONTENTS)"
 	$(call AUTOUNMOUNT)
 	touch finnix
 
