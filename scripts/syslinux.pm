@@ -47,7 +47,7 @@ sub _parse {
 		my @keywords = split /\s+/,$line,2;
 		shift @keywords until $keywords[0] or !@keywords;
 		next if !@keywords or $keywords[0] =~ /^#/; # ignore comments
-		last if $line =~ /^\s*menu\s+end\s*$/i; # XXX any real ways to return from recursively-called function?
+		last if $line =~ /^\s*menu\s+end\s*$/i; # XXX any better ways to return from recursively-called function?
 		$root_directives{lc $keywords[0]}->($config, $keywords[1]) if defined $root_directives{lc $keywords[0]};
 	}
 	shift @$config; # delete $fh
@@ -84,7 +84,7 @@ sub _dump {
 			print "\t"x$indent,"LABEL ",$_->{label},"\n" if $_->{label};
 			$indent++;
 			print "\t"x$indent,"MENU LABEL ", $_->{menu}{label}, "\n" if $_->{menu}{label};
-			next unless $_->{label};
+			unless ($_->{label}) { $indent--; next }
 			print "\t"x$indent,"MENU EXIT\n" if $_->{menu}{exit};
 			print "\t"x$indent,"MENU HIDE\n" if $_->{menu}{hide};
 			print "\t"x$indent,"TEXT HELP\n", $_->{help}, "ENDTEXT\n" if $_->{help};
