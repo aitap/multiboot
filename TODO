@@ -1,5 +1,3 @@
 add Debian from http://cdimage.debian.org/cdimage/unofficial/backports/squeeze/?C=M;O=D
-automatically write at least some isolinux configs
-make macros for preetier output and smaller code
 (long-term) EFI support
 (long-term) Porteus -> Slax 7
