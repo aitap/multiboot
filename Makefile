@@ -141,6 +141,19 @@ porteus: porteus-latest
 	$(call AUTOUNMOUNT)
 	touch porteus
 
+slax-latest:
+	$(call LOAD_LINK,http://www.slax.org/download.php,slax-Russian-[\d.]+-i486\.zip,slax.zip)
+	touch slax-latest
+
+# slax is a very special case
+slax: slax-latest
+	unzip "$(DOWNLOAD)/slax.zip" 'slax/*.sb' -d "$(CONTENTS)"
+	perl "-I$(SCRIPTS)" -MArchive::Zip=:ERROR_CODES,:CONSTANTS -msyslinux \
+	-MFile::Basename=basename -E \
+	'my $$zip = Archive::Zip::->new($$ARGV[1]) || die "read: $!\n"; my $$m = syslinux::parse_file(\($$zip->contents($$ARGV[2]) || die)[0]); $$m = [grep { $$_->{kernel} } @$$m]; syslinux::save($$m, $$ARGV[0]."/isolinux/slax.cfg"); for (@$$m) {for ($$_->{kernel}, $$_->{initrd} ? @{$$_->{initrd}} : ()) {$$zip->extractMember($$_ =~ m|^/(.*)|, $$ARGV[0].$$_)}}' \
+	"$(CONTENTS)" "$(DOWNLOAD)/slax.zip" slax/boot/syslinux.cfg
+	touch slax
+
 # сборка образа, установка на флешку
 
 iso: base $(SYSTEMS) syslinux-iso config
