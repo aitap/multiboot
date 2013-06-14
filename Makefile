@@ -120,8 +120,8 @@ love:
 
 debian-latest: base
 	mkdir -p "$(DOWNLOAD)/debian"
-	wget -O"$(DOWNLOAD)/debian/linux" http://cdimage.debian.org/debian/dists/squeeze/main/installer-i386/current/images/netboot/debian-installer/i386/linux
-	wget -O"$(DOWNLOAD)/debian/initrd.gz" http://cdimage.debian.org/debian/dists/squeeze/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz
+	wget -O"$(DOWNLOAD)/debian/linux" http://cdimage.debian.org/debian/dists/stable/main/installer-i386/current/images/netboot/debian-installer/i386/linux
+	wget -O"$(DOWNLOAD)/debian/initrd.gz" http://cdimage.debian.org/debian/dists/stable/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz
 	touch debian-latest
 
 debian: debian-latest
