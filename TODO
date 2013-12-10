@@ -1,9 +1,5 @@
 EFI support
  - appeared in Syslinux
  - download the latest version again instead of 4.xx
-Porteus -> Slax 7
- - slax 7 released
- - multilang is better in slax?
- - keep both, decide on which to use by default
 add Debian from http://cdimage.debian.org/cdimage/unofficial/backports/squeeze/?C=M;O=D
  - problematic to run from *both* cd and thumbdrive

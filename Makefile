@@ -144,8 +144,11 @@ porteus: porteus-latest
 	$(call AUTOUNMOUNT)
 	touch porteus
 
+slax_language := Russian
+
 slax-latest:
-	$(call LOAD_LINK,http://www.slax.org/download.php,slax-Russian-[\d.]+-i486\.zip,slax.zip)
+	@echo "Additional parameters: slax_language=$(slax_language)"
+	$(call LOAD_LINK,http://www.slax.org/download.php,slax-$(slax_language)-[\d.]+-i486\.zip,slax.zip)
 	touch slax-latest
 
 # slax is a very special case

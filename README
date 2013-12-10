@@ -52,3 +52,6 @@ Additional parameters:
 
 porteus_desktop = XFCE
 	Used to select ISO image of Porteus to download, see http://dl.porteus.org/i486/current/ for full list
+
+slax_language = Russian
+	Used to select the ISO image of Slax to download, see http://www.slax.org/en/download.php for full list
