@@ -140,7 +140,8 @@ porteus-latest: base
 porteus: porteus-latest
 	$(call AUTOMOUNT,porteus.iso)
 	$(call AUTOCOPY,Porteus,porteus.cfg,$(MOUNTPOINT)/boot/syslinux/porteus.cfg)
-	cp -rv "$(MOUNTPOINT)/porteus" "$(CONTENTS)"
+	mkdir -p "$(MOUNTPOINT)/porteus"
+	cp -rv "$(MOUNTPOINT)/porteus/base" "$(MOUNTPOINT)/porteus/"*.sgn "$(CONTENTS)/porteus"
 	$(call AUTOUNMOUNT)
 	touch porteus
 
