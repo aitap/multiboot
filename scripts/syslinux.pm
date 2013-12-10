@@ -160,13 +160,14 @@ sub find_label {
 }
 
 sub test_copy {
-	return unless $_[0];
-	if (-e "$target/$dirname/".basename($_[0])) { warn "$_[0] already exists\n"; return }
+	my $file = $_[0];
+	return unless $file;
+	$_[0] = "/$dirname/".basename($file);
+	if (-e "$target/$dirname/".basename($file)) { warn "$file already exists\n"; return }
 	copy(
-		($_[0] =~ m|^/| ? $source : dirname($config))."/".$_[0],
-		"$target/$dirname/".basename($_[0])
-	) or die "$_[0]: $!\n";
-	$_[0] = "/$dirname/".basename($_[0]);
+		($file =~ m|^/| ? $source : dirname($config))."/".$file,
+		"$target/$dirname/".basename($file)
+	) or die "$file: $!\n";
 }
 
 process($data);
