@@ -161,7 +161,7 @@ sub find_label {
 
 sub test_copy {
 	return unless $_[0];
-	warn "overwriting $_[0]\n" if -e "$target/$dirname/".basename($_[0]);
+	if (-e "$target/$dirname/".basename($_[0])) { warn "$_[0] already exists\n"; return }
 	copy(
 		($_[0] =~ m|^/| ? $source : dirname($config))."/".$_[0],
 		"$target/$dirname/".basename($_[0])
