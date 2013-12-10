@@ -47,3 +47,8 @@ UMOUNT = umount
 
 TARGET (unset)
 	where to install live-usb (e.g. /dev/sdz3)
+
+Additional parameters:
+
+porteus_desktop = XFCE
+	Used to select ISO image of Porteus to download, see http://dl.porteus.org/i486/current/ for full list

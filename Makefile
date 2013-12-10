@@ -130,8 +130,11 @@ debian: debian-latest
 	cp -v $(CONFIGS)/debian.cfg $(CONTENTS)/isolinux/debian.cfg
 	touch debian
 
+porteus_desktop := XFCE
+
 porteus-latest: base
-	$(call LOAD_LINK,http://www.ponce.cc/porteus/i486/current/,Porteus-v[0-9.]+-i486\.iso,porteus.iso)
+	@echo "Additional parameters: porteus_desktop=$(porteus_desktop)"
+	$(call LOAD_LINK,http://dl.porteus.org/i486/current/,Porteus-$(porteus_desktop)-v[0-9.]+-i486\.iso,porteus.iso)
 	touch porteus-latest
 
 porteus: porteus-latest
