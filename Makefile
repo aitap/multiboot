@@ -10,7 +10,7 @@ CONFIGS := configs
 SCRIPTS := scripts
 
 MOUNTPOINT := /mnt
-MOUNT := mount
+MOUNT := mount -o loop
 UMOUNT := umount
 
 SYSTEMS := porteus finnix sysrcd grub4dos debian
@@ -28,7 +28,7 @@ endef
 # iso
 define AUTOMOUNT
 	@echo -e '\e[1m[ MOUNT ]\e[0m $(1)'
-	@$(MOUNT) -o loop "$(DOWNLOAD)/$(1)" "$(MOUNTPOINT)"
+	@$(MOUNT) "$(DOWNLOAD)/$(1)" "$(MOUNTPOINT)"
 endef
 
 # fullname, target_config, (src_config)
@@ -69,9 +69,9 @@ syslinux-iso: syslinux base
 
 syslinux-usb: syslinux base
 	@if test -z "$(TARGET)"; then /bin/echo -e 'You have to define TARGET.'; exit 1; fi
-	$(MOUNT) "$(TARGET)" "$(MOUNTPOINT)"
+	mount "$(TARGET)" "$(MOUNTPOINT)"
 	mkdir -pv "$(MOUNTPOINT)/isolinux"
-	$(UMOUNT) "$(MOUNTPOINT)"
+	umount "$(MOUNTPOINT)"
 	"$(DOWNLOAD)/syslinux/syslinux-nomtools" -d isolinux -i "$(TARGET)"
 
 # различные ОС, отдельно скачивание и установка
@@ -175,11 +175,11 @@ $(IMAGE): iso
 
 install-usb: base $(SYSTEMS) syslinux-usb config
 	@if test -z "$(TARGET)"; then echo "You have to define TARGET to make install-usb."; exit 1; fi
-	$(MOUNT) "$(TARGET)" "$(MOUNTPOINT)"
+	mount "$(TARGET)" "$(MOUNTPOINT)"
 	cp -Lrv "$(CONTENTS)/"* "$(MOUNTPOINT)"
 	rm -fv "$(MOUNTPOINT)/isolinux/isolinux.bin"
 	mv -v "$(MOUNTPOINT)/isolinux/isolinux.cfg" "$(MOUNTPOINT)/isolinux/syslinux.cfg"
-	"$(UMOUNT)" "$(MOUNTPOINT)"
+	umount "$(MOUNTPOINT)"
 
 # сборка isolinux.cfg
 
