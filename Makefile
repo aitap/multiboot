@@ -163,7 +163,7 @@ slax: slax-latest
 
 # сборка образа, установка на флешку
 
-iso: base $(SYSTEMS) syslinux-iso config
+iso: base syslinux-iso config
 	genisoimage -o "$(IMAGE)" \
 	-l -J -R \
 	-b isolinux/isolinux.bin -c isolinux/boot.cat \
