@@ -22,7 +22,7 @@ SYSTEMS := porteus finnix sysrcd grub4dos debian
 # url, regexp, save_to
 define LOAD_LINK
 	@echo -e '\e[1m[ DOWNLOAD ]\e[0m $(1) -> $(2) -> $(3)'
-	@perl "$(SCRIPTS)/download.pl" "$(1)" "$(2)" "$(DOWNLOAD)/$(3)"
+	@perl "$(SCRIPTS)/download.pl" "$(1)" "$(DOWNLOAD)/$(3)" $(2)
 endef
 
 # iso
@@ -58,7 +58,7 @@ clean:
 
 syslinux: base
 	mkdir -pv "$(DOWNLOAD)/syslinux"
-	$(call LOAD_LINK,http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D,syslinux-4\.[0-9]+\.tar\.xz,syslinux.tar.xz)
+	$(call LOAD_LINK,http://www.kernel.org/pub/linux/utils/boot/syslinux/?C=M;O=D,syslinux-4\\.[0-9]+\\.tar\\.xz,syslinux.tar.xz)
 	set -e; for file in core/isolinux.bin linux/syslinux-nomtools com32/menu/menu.c32 com32/menu/vesamenu.c32; do tar --wildcards -xvOf "$(DOWNLOAD)/syslinux.tar.xz" "syslinux-*/$$file" > "$(DOWNLOAD)/syslinux/$$(basename $$file)"; done
 	chmod +x "$(DOWNLOAD)/syslinux/syslinux-nomtools"
 	touch syslinux
@@ -91,7 +91,7 @@ finnix: finnix-latest
 	touch finnix
 
 sysrcd-latest: base
-	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-x86-[\d.]+\.iso/download,sysrcd.iso)
+	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-x86-[\\d.]+\\.iso/download,sysrcd.iso)
 	touch sysrcd-latest
 
 sysrcd: sysrcd-latest
@@ -106,7 +106,7 @@ sysrcd: sysrcd-latest
 	touch sysrcd
 
 grub4dos-latest: base
-	$(call LOAD_LINK,http://code.google.com/p/grub4dos-chenall/downloads/list,grub4dos-[\dabc.-]+\.7z,grub4dos.7z)
+	$(call LOAD_LINK,http://grub4dos.chenall.net/categories/downloads/,/downloads/grub4dos-[\\dabc.-]+/ grub4dos-[\\dabc.-]+\.7z,grub4dos.7z)
 	7z e -y -i'!grub4dos-*/grub.exe' -o"$(DOWNLOAD)" "$(DOWNLOAD)/grub4dos.7z"
 	touch grub4dos-latest
 
@@ -134,7 +134,7 @@ porteus_desktop := XFCE
 
 porteus-latest: base
 	@echo "Additional parameters: porteus_desktop=$(porteus_desktop)"
-	$(call LOAD_LINK,http://dl.porteus.org/i486/current/,Porteus-$(porteus_desktop)-v[0-9.]+-i486\.iso,porteus.iso)
+	$(call LOAD_LINK,http://dl.porteus.org/i486/current/,Porteus-$(porteus_desktop)-v[0-9.]+-i486\\.iso,porteus.iso)
 	touch porteus-latest
 
 porteus: porteus-latest
@@ -149,7 +149,7 @@ slax_language := Russian
 
 slax-latest:
 	@echo "Additional parameters: slax_language=$(slax_language)"
-	$(call LOAD_LINK,http://www.slax.org/download.php,slax-$(slax_language)-[\d.]+-i486\.zip,slax.zip)
+	$(call LOAD_LINK,http://www.slax.org/download.php,slax-$(slax_language)-[\\d.]+-i486\\.zip,slax.zip)
 	touch slax-latest
 
 # slax is a very special case
