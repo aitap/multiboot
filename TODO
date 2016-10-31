@@ -1,5 +1,4 @@
 EFI support
  - appeared in Syslinux
  - download the latest version again instead of 4.xx
-add Debian from http://cdimage.debian.org/cdimage/unofficial/backports/squeeze/?C=M;O=D
- - problematic to run from *both* cd and thumbdrive
+find replacements for the dead distros
