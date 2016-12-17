@@ -2,3 +2,5 @@ EFI support
  - appeared in Syslinux
  - download the latest version again instead of 4.xx
 find replacements for the dead distros
+ - the only one actually alive is sysrcd
+ - add knoppix or MX linux?
