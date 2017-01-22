@@ -1,6 +1,17 @@
-EFI support
- - appeared in Syslinux
- - download the latest version again instead of 4.xx
 find replacements for the dead distros
- - the only one actually alive is sysrcd
- - add knoppix or MX linux?
+ - keep sysrcd by default, it's still alive
+ - porteus seems alive too, release 2016-12, keep it optional
+ - drop slax (last beta in 2013), finnix (release 2015)
+ - add Knoppix (optional because it's HUGE)
+ - add Kaspersky, DrWeb (optional because of non-freeness)
+drop the "cd" act, it's solely thumbdrives now
+ - drop the 700M restriction
+ - start things from ISO images most of the time?
+  - may have to switch to GRUB2
+try harder to preserve file paths, allowing things like "netboot server" to function
+EFI support seems imminent
+ - another cause for move to GRUB2?
+ - less painful (as in: minimal user interaction) Secure Boot solution?
+GRUB2 support?
+ - will have to trash the syslinux.pm
+  - it will remain in our hearts
