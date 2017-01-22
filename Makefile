@@ -17,7 +17,7 @@ SYSTEMS := porteus finnix sysrcd grub4dos debian
 
 .PHONY: all clean syslinux-usb install-usb burn
 
-# макросы
+# macros
 
 # url, regexp, save_to
 define LOAD_LINK
@@ -42,7 +42,7 @@ define AUTOUNMOUNT
 	@$(UMOUNT) $(MOUNTPOINT)
 endef
 
-# базовые вещи
+# base
 
 all: base $(SYSTEMS) config
 
@@ -54,7 +54,7 @@ clean:
 	rm -rvf "$(CONTENTS)" "$(DOWNLOAD)"
 	rm -rvf base syslinux syslinux-iso syslinux-usb $(SYSTEMS) $(foreach sys,$(SYSTEMS),$(sys)-latest) iso config
 
-# загрузчик
+# loader
 
 syslinux: base
 	mkdir -pv "$(DOWNLOAD)/syslinux"
@@ -74,7 +74,7 @@ syslinux-usb: syslinux base
 	umount "$(MOUNTPOINT)"
 	"$(DOWNLOAD)/syslinux/syslinux-nomtools" -d isolinux -i "$(TARGET)"
 
-# различные ОС, отдельно скачивание и установка
+# the OSs themselves, download and extract separately
 
 finnix-latest: base
 	$(call LOAD_LINK,http://finnix.org/releases/current/,finnix-[0-9]+.iso,finnix.iso)
@@ -115,9 +115,6 @@ grub4dos: grub4dos-latest
 	cp -v "$(CONFIGS)/grub4dos.cfg" "$(CONTENTS)/isolinux/"
 	touch grub4dos
 
-love:
-	@echo not war
-
 debian-latest: base
 	mkdir -p "$(DOWNLOAD)/debian"
 	wget -O"$(DOWNLOAD)/debian/linux" http://cdimage.debian.org/debian/dists/stable/main/installer-i386/current/images/netboot/debian-installer/i386/linux
@@ -152,7 +149,7 @@ slax-latest:
 	$(call LOAD_LINK,http://www.slax.org/download.php,slax-$(slax_language)-[\\d.]+-i486\\.zip,slax.zip)
 	touch slax-latest
 
-# slax is a very special case
+# slax is a *very* special case
 slax: slax-latest
 	unzip "$(DOWNLOAD)/slax.zip" 'slax/*.sb' -d "$(CONTENTS)"
 	perl "-I$(SCRIPTS)" -MArchive::Zip=:ERROR_CODES,:CONSTANTS -msyslinux \
@@ -161,7 +158,7 @@ slax: slax-latest
 	"$(CONTENTS)" "$(DOWNLOAD)/slax.zip" slax/boot/syslinux.cfg
 	touch slax
 
-# сборка образа, установка на флешку
+# make ISO image / install to thumbdrive
 
 iso: base syslinux-iso config
 	genisoimage -o "$(IMAGE)" \
@@ -181,7 +178,7 @@ install-usb: base $(SYSTEMS) syslinux-usb config
 	mv -v "$(MOUNTPOINT)/isolinux/isolinux.cfg" "$(MOUNTPOINT)/isolinux/syslinux.cfg"
 	umount "$(MOUNTPOINT)"
 
-# сборка isolinux.cfg
+# build loader config
 
 config: base syslinux
 	rm -vf "$(CONTENTS)/isolinux/config.cfg" "$(CONTENTS)/isolinux/isolinux.cfg"
