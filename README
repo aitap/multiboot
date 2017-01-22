@@ -10,17 +10,11 @@ optional:
 
 Useful make rules:
 
-all: build live cd contents
+all: build live directory structure
 install-usb: install multi-boot compilation to usb-drive (you'll have to define TARGET=/dev/sdXY)
 clean: self-explanatory :)
 
 Useful variables:
-
-IMAGE = ./image.iso
-	where to place the final image
-
-MKISOFS = genisoimage
-	what to run to build iso image
 
 CONTENTS = ./contents/
 	where to store live cd contents
@@ -35,10 +29,10 @@ MOUNTPOINT = /mnt
 	where to mount iso images and usb drive
 
 MOUNT = mount
-	what to run to mount something (try `sudo mount` or `fuseiso`)
+	what to run to mount source images (try `sudo mount` or `fuseiso`)
 
 UMOUNT = umount
-	whet to run to umount something (try `sudo umount` or `fusermount -u`)
+	whet to run to unmount mounted images (try `sudo umount` or `fusermount -u`)
 
 TARGET (unset)
 	where to install live-usb (e.g. /dev/sdz3)

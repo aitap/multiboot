@@ -1,7 +1,5 @@
 #!/usr/bin/make -f
 
-MKISOFS := genisomage
-
 CONTENTS := contents
 DOWNLOAD := download
 CONFIGS := configs

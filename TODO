@@ -1,7 +1,4 @@
 find replacements for the dead distros
- - keep sysrcd by default, it's still alive
- - porteus seems alive too, release 2016-12, keep it optional
- - drop slax (last beta in 2013), finnix (release 2015)
  - add Knoppix (optional because it's HUGE)
   - will have to use a smart enough downloader
  - add Kaspersky, DrWeb (optional because of non-freeness)
