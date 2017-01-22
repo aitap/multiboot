@@ -9,7 +9,7 @@ MOUNTPOINT := /mnt
 MOUNT := mount -o loop
 UMOUNT := umount
 
-IMAGES := sysrcd grub4dos debian
+IMAGES := sysrcd $(debian_cfg) $(grub4dos_krn)
 ALL_IMAGES := $(IMAGES) porteus
 
 .PHONY: all clean syslinux-usb install-usb burn
@@ -49,7 +49,7 @@ base:
 
 clean:
 	rm -rvf "$(CONTENTS)" "$(DOWNLOAD)"
-	rm -rvf base syslinux syslinux-usb $(ALL_IMAGES) $(foreach sys,$(ALL_IMAGES),$(sys)-latest) config
+	rm -rvf base syslinux $(ALL_IMAGES) config
 
 # loader
 
@@ -62,11 +62,13 @@ syslinux: base
 
 # images themselves, download and extract separately
 
-sysrcd-latest: base
+sysrcd_iso := $(DOWNLOAD)/sysrcd.iso
+$(sysrcd_iso): base
 	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-x86-[\\d.]+\\.iso/download,sysrcd.iso)
-	touch sysrcd-latest
+	touch $(sysrcd_iso)
+sysrcd_iso: $(sysrcd_iso)
 
-sysrcd: sysrcd-latest
+sysrcd: $(sysrcd_iso)
 	$(call AUTOMOUNT,sysrcd.iso)
 	$(call AUTOCOPY,SystemRescueCD,sysrcd.cfg)
 	mkdir -p "$(CONTENTS)/sysrcd"
@@ -77,36 +79,45 @@ sysrcd: sysrcd-latest
 	$(call AUTOUNMOUNT)
 	touch sysrcd
 
-grub4dos-latest: base
+grub4dos_7z := $(DOWNLOAD)/grub4dos.7z
+$(grub4dos_7z): base
 	$(call LOAD_LINK,http://grub4dos.chenall.net/categories/downloads/,/downloads/grub4dos-[\\dabc.-]+/ grub4dos-[\\dabc.-]+\.7z,grub4dos.7z)
-	7z e -y -i'!grub4dos-*/grub.exe' -o"$(DOWNLOAD)" "$(DOWNLOAD)/grub4dos.7z"
-	touch grub4dos-latest
+	touch $(grub4dos_7z)
+grub4dos_7z: $(grub4dos_7z)
 
-grub4dos: grub4dos-latest
-	cp -v "$(DOWNLOAD)/grub.exe" "$(CONTENTS)/isolinux/"
+grub4dos_krn := $(CONTENTS)/isolinux/grub.exe
+$(grub4dos_krn): $(grub4dos_7z)
+	7z e -y -i'!grub4dos-*/grub.exe' -o"$(CONTENTS)/isolinux" "$(DOWNLOAD)/grub4dos.7z"
 	cp -v "$(CONFIGS)/grub4dos.cfg" "$(CONTENTS)/isolinux/"
-	touch grub4dos
+	touch $(grub4dos_krn)
+grub4dos_krn: $(grub4dos_krn)
 
-debian-latest: base
-	mkdir -p "$(DOWNLOAD)/debian"
-	wget -O"$(DOWNLOAD)/debian/linux" http://cdimage.debian.org/debian/dists/stable/main/installer-i386/current/images/netboot/debian-installer/i386/linux
-	wget -O"$(DOWNLOAD)/debian/initrd.gz" http://cdimage.debian.org/debian/dists/stable/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz
-	touch debian-latest
-
-debian: debian-latest
+debian_images := $(CONTENTS)/debian/linux $(CONTENTS)/debian/initrd.gz
+$(debian_images): base
 	mkdir -pv $(CONTENTS)/debian/
-	cp -v $(DOWNLOAD)/debian/linux $(DOWNLOAD)/debian/initrd.gz $(CONTENTS)/debian/
+	wget -N -P $(CONTENTS)/debian http://cdimage.debian.org/debian/dists/stable/main/installer-i386/current/images/netboot/debian-installer/i386/linux http://cdimage.debian.org/debian/dists/stable/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz
+	touch $(debian_images)
+debian_images: $(debian_images)
+
+debian_firmware := $(DOWNLOAD)/debian_firmware.tgz
+# http://cdimage.debian.org/cdimage/unofficial/non-free/firmware/stable/current/firmware.tar.gz
+
+debian_cfg := $(CONTENTS)/isolinux/debian.cfg
+$(debian_cfg): $(debian_images)
 	cp -v $(CONFIGS)/debian.cfg $(CONTENTS)/isolinux/debian.cfg
-	touch debian
+	touch $(debian_cfg)
+debian_cfg: $(debian_cfg)
 
 porteus_desktop := XFCE
 
-porteus-latest: base
+porteus_iso := $(DOWNLOAD)/porteus.iso
+$(porteus_iso): base
 	@echo "Additional parameters: porteus_desktop=$(porteus_desktop)"
-	$(call LOAD_LINK,http://dl.porteus.org/i486/current/,Porteus-$(porteus_desktop)-v[0-9.]+-i486\\.iso,porteus.iso)
-	touch porteus-latest
+	$(call LOAD_LINK,http://dl.porteus.org/i586/current/,Porteus-$(porteus_desktop)-v[0-9.]+-i586\\.iso,porteus.iso)
+	touch $(porteus_iso)
+porteus_iso: $(porteus_iso)
 
-porteus: porteus-latest
+porteus: $(porteus_iso)
 	$(call AUTOMOUNT,porteus.iso)
 	$(call AUTOCOPY,Porteus,porteus.cfg,$(MOUNTPOINT)/boot/syslinux/porteus.cfg)
 	mkdir -p "$(MOUNTPOINT)/porteus"
