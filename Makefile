@@ -100,11 +100,15 @@ $(debian_images): base
 debian_images: $(debian_images)
 
 debian_firmware := $(DOWNLOAD)/debian_firmware.tgz
-# http://cdimage.debian.org/cdimage/unofficial/non-free/firmware/stable/current/firmware.tar.gz
+$(debian_firmware): base
+	wget -O $(debian_firmware) http://cdimage.debian.org/cdimage/unofficial/non-free/firmware/stable/current/firmware.tar.gz
+	touch $(debian_firmware)
+debian_firmware: $(debian_firmware)
 
 debian_cfg := $(CONTENTS)/isolinux/debian.cfg
 $(debian_cfg): $(debian_images)
 	cp -v $(CONFIGS)/debian.cfg $(CONTENTS)/isolinux/debian.cfg
+	[ -e "$(debian_firmware)" ] && tar -xvvf "$(debian_firmware)" -C $(CONTENTS) || true
 	touch $(debian_cfg)
 debian_cfg: $(debian_cfg)
 
