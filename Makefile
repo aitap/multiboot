@@ -11,7 +11,8 @@ MOUNTPOINT := /mnt
 MOUNT := mount -o loop
 UMOUNT := umount
 
-SYSTEMS := porteus finnix sysrcd grub4dos debian
+IMAGES := sysrcd grub4dos debian
+ALL_IMAGES := $(IMAGES) porteus
 
 .PHONY: all clean syslinux-usb install-usb burn
 
@@ -42,7 +43,7 @@ endef
 
 # base
 
-all: base $(SYSTEMS) config
+all: base $(IMAGES) config
 
 base:
 	mkdir -pv "$(CONTENTS)" "$(DOWNLOAD)" "$(CONTENTS)/isolinux"
@@ -50,7 +51,7 @@ base:
 
 clean:
 	rm -rvf "$(CONTENTS)" "$(DOWNLOAD)"
-	rm -rvf base syslinux syslinux-iso syslinux-usb $(SYSTEMS) $(foreach sys,$(SYSTEMS),$(sys)-latest) iso config
+	rm -rvf base syslinux syslinux-usb $(ALL_IMAGES) $(foreach sys,$(ALL_IMAGES),$(sys)-latest) config
 
 # loader
 
@@ -61,21 +62,7 @@ syslinux: base
 	chmod +x "$(DOWNLOAD)/syslinux/syslinux-nomtools"
 	touch syslinux
 
-# the OSs themselves, download and extract separately
-
-finnix-latest: base
-	$(call LOAD_LINK,http://finnix.org/releases/current/,finnix-[0-9]+.iso,finnix.iso)
-	touch finnix-latest
-
-finnix: finnix-latest
-	$(call AUTOMOUNT,finnix.iso)
-	$(call AUTOCOPY,Finnix,finnix.cfg)
-	cp -rv "$(MOUNTPOINT)/finnix/" "$(CONTENTS)"
-	perl "-I$(SCRIPTS)" -msyslinux -MFile::Copy=cp -MFile::Basename=basename -MData::Dumper -e \
-	'$$m = syslinux::parse_file($$ARGV[1]."/isolinux/finnix.cfg"); sub fix { for (@{$$_[0]}) { $$_->{append} =~ s|(?<=pciids=)(\S+)|cp $$ARGV[0]."/".$$1, $$ARGV[1]."/finnix/".basename($$1); "/finnix/".basename($$1)|e if $$_->{append}; fix($$_->{menu}{labels}) if $$_->{menu}{labels}; }}; fix($$m); syslinux::save($$m,$$ARGV[1]."/isolinux/finnix.cfg");' \
-	"$(MOUNTPOINT)" "$(CONTENTS)"
-	$(call AUTOUNMOUNT)
-	touch finnix
+# images themselves, download and extract separately
 
 sysrcd-latest: base
 	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-x86-[\\d.]+\\.iso/download,sysrcd.iso)
@@ -129,22 +116,6 @@ porteus: porteus-latest
 	$(call AUTOUNMOUNT)
 	touch porteus
 
-slax_language := Russian
-
-slax-latest:
-	@echo "Additional parameters: slax_language=$(slax_language)"
-	$(call LOAD_LINK,http://www.slax.org/download.php,slax-$(slax_language)-[\\d.]+-i486\\.zip,slax.zip)
-	touch slax-latest
-
-# slax is a *very* special case
-slax: slax-latest
-	unzip "$(DOWNLOAD)/slax.zip" 'slax/*.sb' -d "$(CONTENTS)"
-	perl "-I$(SCRIPTS)" -MArchive::Zip=:ERROR_CODES,:CONSTANTS -msyslinux \
-	-MFile::Basename=basename -E \
-	'my $$zip = Archive::Zip::->new($$ARGV[1]) || die "read: $!\n"; my $$m = syslinux::parse_file(\($$zip->contents($$ARGV[2]) || die)[0]); $$m = [grep { $$_->{kernel} } @$$m]; syslinux::save($$m, $$ARGV[0]."/isolinux/slax.cfg"); for (@$$m) {for ($$_->{kernel}, $$_->{initrd} ? @{$$_->{initrd}} : ()) {$$zip->extractMember($$_ =~ m|^/(.*)|, $$ARGV[0].$$_)}}' \
-	"$(CONTENTS)" "$(DOWNLOAD)/slax.zip" slax/boot/syslinux.cfg
-	touch slax
-
 # build loader config
 
 config: base syslinux
@@ -164,7 +135,7 @@ syslinux-usb: syslinux base
 	umount "$(MOUNTPOINT)"
 	"$(DOWNLOAD)/syslinux/syslinux-nomtools" -d isolinux -i "$(TARGET)"
 
-install-usb: base $(SYSTEMS) syslinux-usb config
+install-usb: all syslinux-usb
 	@if test -z "$(TARGET)"; then echo "You have to define TARGET to make install-usb."; exit 1; fi
 	mount "$(TARGET)" "$(MOUNTPOINT)"
 	cp -Lrv "$(CONTENTS)/"* "$(MOUNTPOINT)"

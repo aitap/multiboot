@@ -1,10 +1,11 @@
 Welcome!
 
-This Makefile allows you to build yourself a multiboot thumbdrive from the following set of systems:
- - Finnix (http://finnix.org)
+This Makefile allows you to build yourself a multiboot thumbdrive from the following set of images:
+default:
  - SystemRescueCD (http://sysresccd.org)
+ - Debian stable netinstall (http://debian.org)
  - GRUB4DOS (http://grub4dos-chenall.googlecode.com)
- - Debian testing netinstall (http://debian.org)
+optional:
  - Porteus (http://porteus.org/)
 
 Useful make rules:
@@ -46,6 +47,3 @@ Additional parameters:
 
 porteus_desktop = XFCE
 	Used to select ISO image of Porteus to download, see http://dl.porteus.org/i486/current/ for full list
-
-slax_language = Russian
-	Used to select the ISO image of Slax to download, see http://www.slax.org/en/download.php for full list
