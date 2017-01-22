@@ -107,8 +107,8 @@ debian_firmware: $(debian_firmware)
 
 debian_cfg := $(CONTENTS)/isolinux/debian.cfg
 $(debian_cfg): $(debian_images)
+	-[ -e "$(debian_firmware)" ] && mkdir -p $(CONTENTS)/firmware && tar -xvvf "$(debian_firmware)" -C $(CONTENTS)/firmware
 	cp -v $(CONFIGS)/debian.cfg $(CONTENTS)/isolinux/debian.cfg
-	[ -e "$(debian_firmware)" ] && tar -xvvf "$(debian_firmware)" -C $(CONTENTS) || true
 	touch $(debian_cfg)
 debian_cfg: $(debian_cfg)
 
