@@ -1,6 +1,6 @@
 Welcome!
 
-This Makefile allows you to build yourself a multiboot cd with fixed amount of components:
+This Makefile allows you to build yourself a multiboot thumbdrive from the following set of systems:
  - Finnix (http://finnix.org)
  - SystemRescueCD (http://sysresccd.org)
  - GRUB4DOS (http://grub4dos-chenall.googlecode.com)
@@ -10,11 +10,8 @@ This Makefile allows you to build yourself a multiboot cd with fixed amount of c
 Useful make rules:
 
 all: build live cd contents
-iso: make iso-image
 install-usb: install multi-boot compilation to usb-drive (you'll have to define TARGET=/dev/sdXY)
 clean: self-explanatory :)
-burn: burn the image on the disk
-format-usb: format the usb-drive (mkfs + install-mbr)
 
 Useful variables:
 
@@ -23,9 +20,6 @@ IMAGE = ./image.iso
 
 MKISOFS = genisoimage
 	what to run to build iso image
-
-CDRECORD = wodim
-	what to run to burn the image (try `cdrecord dev=something`)
 
 CONTENTS = ./contents/
 	where to store live cd contents

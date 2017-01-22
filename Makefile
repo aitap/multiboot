@@ -1,7 +1,5 @@
 #!/usr/bin/make -f
 
-IMAGE := image.iso
-
 MKISOFS := genisomage
 
 CONTENTS := contents
@@ -62,17 +60,6 @@ syslinux: base
 	set -e; for file in core/isolinux.bin linux/syslinux-nomtools com32/menu/menu.c32 com32/menu/vesamenu.c32; do tar --wildcards -xvOf "$(DOWNLOAD)/syslinux.tar.xz" "syslinux-*/$$file" > "$(DOWNLOAD)/syslinux/$$(basename $$file)"; done
 	chmod +x "$(DOWNLOAD)/syslinux/syslinux-nomtools"
 	touch syslinux
-
-syslinux-iso: syslinux base
-	cp "$(DOWNLOAD)/syslinux/isolinux.bin" "$(CONTENTS)/isolinux/"
-	touch syslinux-iso
-
-syslinux-usb: syslinux base
-	@if test -z "$(TARGET)"; then /bin/echo -e 'You have to define TARGET.'; exit 1; fi
-	mount "$(TARGET)" "$(MOUNTPOINT)"
-	mkdir -pv "$(MOUNTPOINT)/isolinux"
-	umount "$(MOUNTPOINT)"
-	"$(DOWNLOAD)/syslinux/syslinux-nomtools" -d isolinux -i "$(TARGET)"
 
 # the OSs themselves, download and extract separately
 
@@ -158,26 +145,6 @@ slax: slax-latest
 	"$(CONTENTS)" "$(DOWNLOAD)/slax.zip" slax/boot/syslinux.cfg
 	touch slax
 
-# make ISO image / install to thumbdrive
-
-iso: base syslinux-iso config
-	genisoimage -o "$(IMAGE)" \
-	-l -J -R \
-	-b isolinux/isolinux.bin -c isolinux/boot.cat \
-	-no-emul-boot -boot-load-size 4 -boot-info-table \
-	-V 'AITap Boot CD' \
-	"$(CONTENTS)"
-	touch iso
-$(IMAGE): iso
-
-install-usb: base $(SYSTEMS) syslinux-usb config
-	@if test -z "$(TARGET)"; then echo "You have to define TARGET to make install-usb."; exit 1; fi
-	mount "$(TARGET)" "$(MOUNTPOINT)"
-	cp -Lrv "$(CONTENTS)/"* "$(MOUNTPOINT)"
-	rm -fv "$(MOUNTPOINT)/isolinux/isolinux.bin"
-	mv -v "$(MOUNTPOINT)/isolinux/isolinux.cfg" "$(MOUNTPOINT)/isolinux/syslinux.cfg"
-	umount "$(MOUNTPOINT)"
-
 # build loader config
 
 config: base syslinux
@@ -187,3 +154,20 @@ config: base syslinux
 	mv "$(CONTENTS)/isolinux/isolinux.cfg.1" "$(CONTENTS)/isolinux/isolinux.cfg"
 	cp -v "$(DOWNLOAD)/syslinux/menu.c32" "$(CONFIGS)/config.cfg" "$(CONTENTS)/isolinux/"
 	touch config
+
+# install to thumbdrive
+
+syslinux-usb: syslinux base
+	@if test -z "$(TARGET)"; then /bin/echo -e 'You have to define TARGET.'; exit 1; fi
+	mount "$(TARGET)" "$(MOUNTPOINT)"
+	mkdir -pv "$(MOUNTPOINT)/isolinux"
+	umount "$(MOUNTPOINT)"
+	"$(DOWNLOAD)/syslinux/syslinux-nomtools" -d isolinux -i "$(TARGET)"
+
+install-usb: base $(SYSTEMS) syslinux-usb config
+	@if test -z "$(TARGET)"; then echo "You have to define TARGET to make install-usb."; exit 1; fi
+	mount "$(TARGET)" "$(MOUNTPOINT)"
+	cp -Lrv "$(CONTENTS)/"* "$(MOUNTPOINT)"
+	rm -fv "$(MOUNTPOINT)/isolinux/isolinux.bin"
+	mv -v "$(MOUNTPOINT)/isolinux/isolinux.cfg" "$(MOUNTPOINT)/isolinux/syslinux.cfg"
+	umount "$(MOUNTPOINT)"
