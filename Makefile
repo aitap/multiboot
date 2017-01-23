@@ -84,7 +84,7 @@ sysrcd: $(sysrcd_iso)
 
 grub4dos_7z := $(DOWNLOAD)/grub4dos.7z
 $(grub4dos_7z): | $(base)
-	$(call LOAD_LINK,http://grub4dos.chenall.net/categories/downloads/,/downloads/grub4dos-[\\dabc.-]+/ grub4dos-[\\dabc.-]+\.7z,grub4dos.7z)
+	$(call LOAD_LINK,http://grub4dos.chenall.net/categories/downloads/,/downloads/grub4dos-[\\dabc.-]+/ grub4dos-[\\dabc.-]+\.7z,$(grub4dos_7z))
 	touch $(grub4dos_7z)
 grub4dos_7z: $(grub4dos_7z)
 
