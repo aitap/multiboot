@@ -10,7 +10,7 @@ MOUNT := mount -o loop
 UMOUNT := umount
 
 IMAGES := sysrcd $(grub4dos_krn)
-ALL_IMAGES := $(IMAGES) porteus
+ALL_IMAGES := $(IMAGES) porteus $(knoppix_files)
 
 .PHONY: all clean syslinux-usb install-usb
 
@@ -43,7 +43,7 @@ endef
 
 all: $(base) $(IMAGES) $(config)
 
-base := $(CONTENTS) $(DOWNLOAD) $(CONTENTS)/isolinux
+base := $(DOWNLOAD) $(CONTENTS) $(CONTENTS)/isolinux $(CONTENTS)/boot
 $(base):
 	mkdir -pv $(base)
 	touch $(base)
@@ -119,6 +119,15 @@ knoppix_iso := $(DOWNLOAD)/KNOPPIX_V7.7.1DVD-2016-10-22-EN/KNOPPIX_V7.7.1DVD-201
 $(knoppix_iso): | $(base)
 	aria2c --seed-time=0 --allow-overwrite=true -d $(DOWNLOAD) $(knoppix_torrent) # please seed separately
 knoppix_iso: $(knoppix_iso)
+
+# Knoppix has to be unpacked because it's more than 4G, but consists of less-than-4G files
+knoppix_files := $(CONTENTS)/boot/KNOPPIX $(CONTENTS)/isolinux/knoppix.cfg
+$(knoppix_files): $(knoppix_iso) $(CONFIGS)/knoppix.cfg
+	7z x -o$(CONTENTS)/boot $(knoppix_iso) KNOPPIX/KNOPPIX KNOPPIX/KNOPPIX1 KNOPPIX/kversion
+	7z e -o$(CONTENTS)/boot/KNOPPIX $(knoppix_iso) $(foreach f,linux linux64 minirt.gz,boot/isolinux/$(f))
+	cp -v $(CONFIGS)/knoppix.cfg $(CONTENTS)/isolinux/knoppix.cfg
+	touch $(knoppix_files)
+knoppix_files: $(knoppix_files)
 
 # build loader config
 

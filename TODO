@@ -1,15 +1,11 @@
 find replacements for the dead distros
- - add Knoppix (optional because it's HUGE)
-  - will have to use a smart enough downloader
  - add Kaspersky, DrWeb (optional because of non-freeness)
 drop the "cd" act, it's solely thumbdrives now
- - drop the 700M restriction
-  - but keep files under 4G because of FAT32
  - start things from ISO images most of the time?
   - may have to switch to GRUB2
   - maybe download right into the target file
 maybe drop most of the stamp files
-try harder to preserve file paths, allowing things like "netboot server" to function
+try harder to preserve file paths, allowing things like "sysrcd netboot server" to function
 EFI support seems imminent
  - another cause for move to GRUB2?
  - less painful (as in: minimal user interaction) Secure Boot solution?
