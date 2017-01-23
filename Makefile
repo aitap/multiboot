@@ -63,7 +63,6 @@ $(syslinux): | $(base)
 	touch $(syslinux)
 syslinux: $(syslinux)
 
-
 # images themselves, download and extract separately
 
 sysrcd_iso := $(CONTENTS)/boot/sysrcd.iso
@@ -128,6 +127,19 @@ $(knoppix_files): $(knoppix_iso) $(CONFIGS)/knoppix.cfg
 	cp -v $(CONFIGS)/knoppix.cfg $(CONTENTS)/isolinux/knoppix.cfg
 	touch $(knoppix_files)
 knoppix_files: $(knoppix_files)
+
+kav_iso := $(CONTENTS)/rescue/rescue.iso
+$(kav_iso): | $(base)
+	mkdir -pv $(CONTENTS)/rescue
+	wget -c -O $(kav_iso) http://rescuedisk.kaspersky-labs.com/rescuedisk/updatable/kav_rescue_10.iso
+	touch $(kav_iso)
+kav_iso: $(kav_iso)
+
+drweb_iso := $(CONTENTS)/boot/drweb.iso
+$(drweb_iso): | $(base)
+	wget -c -O $(drweb_iso) https://download.geo.drweb.com/pub/drweb/livedisk/drweb-livedisk-900-cd.iso
+	touch $(drweb_iso)
+drweb_iso: $(drweb_iso)
 
 # build loader config
 
