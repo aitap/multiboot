@@ -1,14 +1,11 @@
-find replacements for the dead distros
- - add Kaspersky, DrWeb (optional because of non-freeness)
-drop the "cd" act, it's solely thumbdrives now
- - start things from ISO images most of the time?
-  - may have to switch to GRUB2
-  - maybe download right into the target file
-maybe drop most of the stamp files
-try harder to preserve file paths, allowing things like "sysrcd netboot server" to function
-EFI support seems imminent
- - another cause for move to GRUB2?
- - less painful (as in: minimal user interaction) Secure Boot solution?
 GRUB2 support?
  - will have to trash the syslinux.pm
   - it will remain in our hearts
+ - hack together a syslinux->GRUB2 translator
+  - check for EFI and disable linux16 images
+  - translate ifcpu64.c32 and other c32 when possible
+find replacements for the dead distros
+ - add Kaspersky, DrWeb (optional because of non-freeness)
+EFI support seems imminent
+ - another cause for move to GRUB2?
+ - less painful (as in: minimal user interaction) Secure Boot solution?
