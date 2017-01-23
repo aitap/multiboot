@@ -133,11 +133,11 @@ porteus: $(porteus_iso)
 	$(call AUTOUNMOUNT)
 	touch porteus
 
-# keep it updated... for now. It's not like KNOPPIX is released every week
+# For now, update torrent URL manually. It's not like KNOPPIX is released every week.
 knoppix_torrent := http://torrent.unix-ag.uni-kl.de/torrents/KNOPPIX_V7.7.1DVD-2016-10-22-EN.torrent
 knoppix_iso := $(DOWNLOAD)/KNOPPIX_V7.7.1DVD-2016-10-22-EN/KNOPPIX_V7.7.1DVD-2016-10-22-EN.iso
-$(knoppix_iso): base
-	aria2c -d $(DOWNLOAD) $(knoppix_torrent)
+$(knoppix_iso): | $(base)
+	aria2c --seed-time=0 --allow-overwrite=true -d $(DOWNLOAD) $(knoppix_torrent) # please seed separately
 knoppix_iso: $(knoppix_iso)
 
 # build loader config
