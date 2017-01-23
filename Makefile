@@ -19,7 +19,7 @@ ALL_IMAGES := $(IMAGES) porteus $(knoppix_files)
 # url, regexp, save_to
 define LOAD_LINK
 	@echo -e '\e[1m[ DOWNLOAD ]\e[0m $(1) -> $(2) -> $(3)'
-	@perl "$(SCRIPTS)/download.pl" "$(1)" "$(DOWNLOAD)/$(3)" $(2)
+	@perl "$(SCRIPTS)/download.pl" "$(1)" "$(3)" $(2)
 endef
 
 # iso
@@ -66,12 +66,12 @@ syslinux: $(syslinux)
 
 # images themselves, download and extract separately
 
-sysrcd_iso := $(DOWNLOAD)/sysrcd.iso
+sysrcd_iso := $(CONTENTS)/boot/sysrcd.iso
 $(sysrcd_iso): | $(base)
-	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-x86-[\\d.]+\\.iso/download,sysrcd.iso)
+	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-x86-[\\d.]+\\.iso/download,$(sysrcd_iso))
 	touch $(sysrcd_iso)
 sysrcd_iso: $(sysrcd_iso)
-# TODO: download into $(CONTENTS) and use the isoloop=/path/to/file.iso kernel parameter
+# TODO: use the isoloop=/path/to/file.iso kernel parameter
 sysrcd: $(sysrcd_iso)
 	$(call AUTOMOUNT,sysrcd.iso)
 	$(call AUTOCOPY,SystemRescueCD,sysrcd.cfg)
@@ -89,22 +89,22 @@ $(grub4dos_7z): | $(base)
 	touch $(grub4dos_7z)
 grub4dos_7z: $(grub4dos_7z)
 
-grub4dos_krn := $(CONTENTS)/isolinux/grub.exe
+grub4dos_krn := $(CONTENTS)/boot/grub.exe
 $(grub4dos_krn): $(grub4dos_7z)
-	7z e -y -i'!grub4dos-*/grub.exe' -o"$(CONTENTS)/isolinux" "$(DOWNLOAD)/grub4dos.7z"
+	7z e -y -i'!grub4dos-*/grub.exe' -o"$(CONTENTS)/boot" "$(DOWNLOAD)/grub4dos.7z"
 	cp -v "$(CONFIGS)/grub4dos.cfg" "$(CONTENTS)/isolinux/"
 	touch $(grub4dos_krn)
 grub4dos_krn: $(grub4dos_krn)
 
 porteus_desktop := XFCE
 
-porteus_iso := $(DOWNLOAD)/porteus.iso
+porteus_iso := $(CONTENTS)/boot/porteus.iso
 $(porteus_iso): | $(base)
 	@echo "Additional parameters: porteus_desktop=$(porteus_desktop)"
-	$(call LOAD_LINK,http://dl.porteus.org/i586/current/,Porteus-$(porteus_desktop)-v[0-9.]+-i586\\.iso,porteus.iso)
+	$(call LOAD_LINK,http://dl.porteus.org/i586/current/,Porteus-$(porteus_desktop)-v[0-9.]+-i586\\.iso,$(porteus_iso))
 	touch $(porteus_iso)
 porteus_iso: $(porteus_iso)
-# TODO: download straight to $(CONTENTS) and use from=/path/to/file.iso kernel parameter
+# TODO: use from=/path/to/file.iso kernel parameter
 porteus: $(porteus_iso)
 	$(call AUTOMOUNT,porteus.iso)
 	$(call AUTOCOPY,Porteus,porteus.cfg,$(MOUNTPOINT)/boot/syslinux/porteus.cfg)
