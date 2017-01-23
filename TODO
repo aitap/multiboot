@@ -1,5 +1,4 @@
 find replacements for the dead distros
- - Debian netinstall: feature both i386 and amd64
  - add Knoppix (optional because it's HUGE)
   - will have to use a smart enough downloader
  - add Kaspersky, DrWeb (optional because of non-freeness)

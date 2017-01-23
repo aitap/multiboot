@@ -9,7 +9,7 @@ MOUNTPOINT := /mnt
 MOUNT := mount -o loop
 UMOUNT := umount
 
-IMAGES := sysrcd $(debian_cfg) $(grub4dos_krn)
+IMAGES := sysrcd $(grub4dos_krn)
 ALL_IMAGES := $(IMAGES) porteus
 
 .PHONY: all clean syslinux-usb install-usb
@@ -71,7 +71,7 @@ $(sysrcd_iso): | $(base)
 	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-x86-[\\d.]+\\.iso/download,sysrcd.iso)
 	touch $(sysrcd_iso)
 sysrcd_iso: $(sysrcd_iso)
-
+# TODO: download into $(CONTENTS) and use the isoloop=/path/to/file.iso kernel parameter
 sysrcd: $(sysrcd_iso)
 	$(call AUTOMOUNT,sysrcd.iso)
 	$(call AUTOCOPY,SystemRescueCD,sysrcd.cfg)
@@ -96,26 +96,6 @@ $(grub4dos_krn): $(grub4dos_7z)
 	touch $(grub4dos_krn)
 grub4dos_krn: $(grub4dos_krn)
 
-debian_images := $(CONTENTS)/debian/linux $(CONTENTS)/debian/initrd.gz
-$(debian_images): | $(base)
-	mkdir -pv $(CONTENTS)/debian/
-	wget -N -P $(CONTENTS)/debian http://cdimage.debian.org/debian/dists/stable/main/installer-i386/current/images/netboot/debian-installer/i386/linux http://cdimage.debian.org/debian/dists/stable/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz
-	touch $(debian_images)
-debian_images: $(debian_images)
-
-debian_firmware := $(DOWNLOAD)/debian_firmware.tgz
-$(debian_firmware): | $(base)
-	wget -O $(debian_firmware) http://cdimage.debian.org/cdimage/unofficial/non-free/firmware/stable/current/firmware.tar.gz
-	touch $(debian_firmware)
-debian_firmware: $(debian_firmware)
-
-debian_cfg := $(CONTENTS)/isolinux/debian.cfg
-$(debian_cfg): $(debian_images)
-	-[ -e "$(debian_firmware)" ] && mkdir -p $(CONTENTS)/firmware && tar -xvvf "$(debian_firmware)" -C $(CONTENTS)/firmware
-	cp -v $(CONFIGS)/debian.cfg $(CONTENTS)/isolinux/debian.cfg
-	touch $(debian_cfg)
-debian_cfg: $(debian_cfg)
-
 porteus_desktop := XFCE
 
 porteus_iso := $(DOWNLOAD)/porteus.iso
@@ -124,7 +104,7 @@ $(porteus_iso): | $(base)
 	$(call LOAD_LINK,http://dl.porteus.org/i586/current/,Porteus-$(porteus_desktop)-v[0-9.]+-i586\\.iso,porteus.iso)
 	touch $(porteus_iso)
 porteus_iso: $(porteus_iso)
-
+# TODO: download straight to $(CONTENTS) and use from=/path/to/file.iso kernel parameter
 porteus: $(porteus_iso)
 	$(call AUTOMOUNT,porteus.iso)
 	$(call AUTOCOPY,Porteus,porteus.cfg,$(MOUNTPOINT)/boot/syslinux/porteus.cfg)
