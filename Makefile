@@ -111,6 +111,11 @@ $(drweb_iso): | $(base)
 	touch $(drweb_iso)
 drweb_iso: $(drweb_iso)
 
+drweb_cfg := $(CONTENTS)/boot/grub/drweb.cfg.in
+$(drweb_cfg): $(drweb_iso)
+	$(call GEN_CONFIG,boot/drweb.iso,isolinux,txt.cfg,iso-scan/filename,$(drweb_cfg),"DrWeb LiveDisk")
+drweb_cfg: $(drweb_cfg)
+
 # build loader config
 
 config := $(CONTENTS)/boot/grub/grub.cfg
@@ -122,3 +127,4 @@ config: $(config)
 # TODO: install loader on the thumbdrive, both BIOS boot sector and EFI files
 
 # TODO: copy the boot files to the bootable thumbdrive
+# rsync --inplace -rvP
