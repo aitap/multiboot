@@ -50,7 +50,7 @@ sub apply_fixups {
 	return [ map { # this only modifies the insides of the entries
 		if ($_->{kernel}) {
 			# check for memtest/memdisk/plop, set to linux16, add check for grub_platrorm=pc
-			if ($_->{kernel} =~ /memtest|memdisk|plop|plpbt|mt86/i) { # this requires BIOS
+			if ($_->{kernel} =~ /memtest|memdisk|plop|plpbt|mt86|netboot/i) { # this requires BIOS
 				$_->{if} = q{ [ ${grub_platform} = pc ] };
 				$_->{linux16} = 1;
 			}
@@ -114,6 +114,37 @@ sub apply_fixups {
 	} @$entries ];
 }
 
-use Data::Dump qw(dd);
+sub export_grub2 {
+	my ($entries, $title, $image, $indent) = @_;
+	$indent //= 0;
+	my $pr = sub { print "\t"x$indent, @_, "\n" };
+	$pr->(qq[submenu "$title" {]);
+	$indent++;
+	for (@$entries) {
+		if ($_->{if}) {
+			$pr->("if $_->{if}; then");
+			$indent++;
+		}
+		if ($_->{entries}) {
+			export_grub2($_->{entries}, $_->{title}, $image, $indent);
+		} elsif ($_->{kernel}) {
+			$pr->(qq[menuentry "$_->{title}" {]);
+			$indent++;
+			$pr->(qq[loopback loop $image]);
+			$pr->(($_->{linux16} ? "linux16" : "linux"), " (loop)", join " ", $_->{kernel}, @{$_->{param}});
+			$pr->(join " ", "initrd", map "(loop)$_",@{$_->{initrd}}) if @{$_->{initrd}};
+			$indent--;
+			$pr->("}");
+		}
+		if ($_->{if}) {
+			$indent--;
+			$pr->("fi");
+		}
+	}
+	$indent--;
+	$pr->("}");
+}
+
+# EXAMPLE:
 my ($entries, $table, $title) = parse_syslinux(\*ARGV);
-dd apply_fixups($entries, $table,"iso-scan/filename=wtf.iso","/boot/isolinux"); # for example
+export_grub2(apply_fixups($entries, $table,"iso-scan/filename=wtf.iso","/boot/isolinux"),$title||"WTF Image","/wtf.iso");
