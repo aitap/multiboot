@@ -113,7 +113,6 @@ config := $(CONTENTS)/boot/grub/grub.cfg
 $(config): $(CONTENTS)/boot/grub/*.cfg.in | $(base)
 	: > $(config)
 	for file in $^; do echo ". $$(basename $$file)" >> $(config); done
-	# grub variables: grub_platform=efi/pc; grub_cpu=x86_64/i386
 config: $(config)
 
 # TODO: install loader on the thumbdrive, both BIOS boot sector and EFI files
