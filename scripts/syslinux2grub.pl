@@ -145,6 +145,7 @@ sub export_grub2 {
 	$pr->("}");
 }
 
-# EXAMPLE:
-my ($entries, $table, $title) = parse_syslinux(\*ARGV);
-export_grub2(apply_fixups($entries, $table,"iso-scan/filename=wtf.iso","/boot/isolinux"),$title||"WTF Image","/wtf.iso");
+die unless @ARGV == 3 or @ARGV == 4;
+my ($parameter,$path,$image,$title) = @ARGV;
+my ($entries, $table, $title_parsed) = parse_syslinux(\*STDIN);
+export_grub2(apply_fixups($entries, $table,$parameter,$path),($title||$title_parsed||die"No menu title"),$image);

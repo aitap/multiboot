@@ -1,9 +1,3 @@
-GRUB2 support?
- - will have to trash the syslinux.pm
-  - it will remain in our hearts
- - hack together a syslinux->GRUB2 translator
-  - check for EFI and disable linux16 images
-  - translate ifcpu64.c32 and other c32 when possible
 find replacements for the dead distros
  - add Kaspersky, DrWeb (optional because of non-freeness)
 EFI support seems imminent

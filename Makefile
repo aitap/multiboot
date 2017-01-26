@@ -22,6 +22,12 @@ define LOAD_LINK
 	@perl "$(SCRIPTS)/download.pl" "$(1)" "$(3)" $(2)
 endef
 
+# image boot_path config kernel_parameter target_config [title]
+define GEN_CONFIG
+	@echo -e '\e[1m[ GENERATE CONFIG ]\e[0m $(1) / $(2) / $(3) + $(4) -> $(5)'
+	@7z e -so $(CONTENTS)/$(1) $(2)/$(3) | perl "$(SCRIPTS)/syslinux2grub.pl" $(4)=/$(1) /$(2) /$(1) $(6) > $(5)
+endef
+
 # base
 
 all: $(base) $(IMAGES) $(config)
@@ -43,11 +49,9 @@ $(sysrcd_iso): | $(base)
 	touch $(sysrcd_iso)
 sysrcd_iso: $(sysrcd_iso)
 
-# TODO: isoloop=/path/to/file.iso
 sysrcd_cfg := $(CONTENTS)/boot/grub/sysrcd.cfg.in
-$(sysrcd_cfg): $(sysrcd_iso) $(CONFIGS)/sysrcd.cfg
-	cp $(CONFIGS)/sysrcd.cfg $(sysrcd_cfg)
-	touch $(sysrcd_cfg)
+$(sysrcd_cfg): $(sysrcd_iso)
+	$(call GEN_CONFIG,boot/sysrcd.iso,isolinux,isolinux.cfg,isoloop,$(sysrcd_cfg))
 sysrcd_cfg: $(sysrcd_cfg)
 
 grub4dos_7z := $(DOWNLOAD)/grub4dos.7z
@@ -74,8 +78,8 @@ porteus_iso: $(porteus_iso)
 
 # TODO: from=/path/to/file.iso
 porteus_cfg := $(CONTENTS)/boot/grub/porteus.cfg.in
-$(porteus_cfg): $(porteus_iso) $(CONFIGS)/porteus.cfg
-	cp $(CONFIGS)/porteus.cfg $(porteus_cfg)
+$(porteus_cfg): $(porteus_iso)
+	$(call GEN_CONFIG,boot/porteus.iso,boot/syslinux,porteus.cfg,from,$(porteus_cfg))
 porteus_cfg: $(porteus_cfg)
 
 # For now, update torrent URL manually. It's not like KNOPPIX is released every week.
