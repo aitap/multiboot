@@ -105,21 +105,18 @@ $(kav_iso): | $(base)
 kav_iso: $(kav_iso)
 
 kav_files := $(CONTENTS)/boot/grub/kav.cfg.in $(CONTENTS)/liveusb
-$(kav_files): $(kav_iso)
+$(kav_files): $(kav_iso) scripts/kav_fixup.awk
 	echo 'submenu "Kaspersky Rescue Disk" {' > $(CONTENTS)/boot/grub/kav.cfg.in
 	echo set kav_lang=ru >> $(CONTENTS)/boot/grub/kav.cfg.in
 	7z e -so $(kav_iso) boot/grub/i386-pc/cfg/en.cfg >> $(CONTENTS)/boot/grub/kav.cfg.in
 	echo >> $(CONTENTS)/boot/grub/kav.cfg.in
 	$(foreach platform,efi pc, \
 		echo 'if [ $${grub_platrorm} = $(platform) ]; then' >> $(CONTENTS)/boot/grub/kav.cfg.in; \
-		7z e -so $(kav_iso) boot/grub/i386-$(platform)/cfg/kav_menu.cfg | awk -v iso=/rescue/rescue.iso ' \
-			($$1 == "menuentry") {$$0 = $$0 "\n\tloopback loop " iso} \
-			($$1 ~ /linux|initrd/) {$$2 = "(loop)" $$2} \
-			($$1 ~ /menuentry|linux|initrd|}/){print $$0} \
-			' >> $(CONTENTS)/boot/grub/kav.cfg.in; \
+		7z e -so $(kav_iso) boot/grub/i386-$(platform)/cfg/kav_menu.cfg \
+			| awk -f $(SCRIPTS)/kav_fixup.awk \
+			>> $(CONTENTS)/boot/grub/kav.cfg.in; \
 		echo 'fi' >> $(CONTENTS)/boot/grub/kav.cfg.in; \
 	)
-# FIXME: I have to replace root=... with root=live:/dev/whatever in kernel parameters
 	echo '}' >> $(CONTENTS)/boot/grub/kav.cfg.in
 	touch $(CONTENTS)/liveusb
 kav_files: $(kav_files)
@@ -139,7 +136,7 @@ drweb_cfg: $(drweb_cfg)
 
 config := $(CONTENTS)/boot/grub/grub.cfg
 $(config): $(CONTENTS)/boot/grub/*.cfg.in | $(base)
-	: > $(config)
+	echo "set gfxpayload=keep" > $(config)
 	for file in $^; do echo ". $$(basename $$file)" >> $(config); done
 config: $(config)
 
