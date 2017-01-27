@@ -5,12 +5,8 @@ DOWNLOAD := download
 CONFIGS := configs
 SCRIPTS := scripts
 
-MOUNTPOINT := /mnt
-MOUNT := mount -o loop
-UMOUNT := umount
-
 IMAGES := $(sysrcd_cfg) $(grub4dos_files)
-ALL_IMAGES := $(IMAGES) porteus $(knoppix_files)
+ALL_IMAGES := $(IMAGES) $(knoppix_files) $(porteus_cfg) $(kav_files) $(drweb_cfg)
 
 .PHONY: all clean
 
