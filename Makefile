@@ -76,7 +76,6 @@ $(porteus_iso): | $(base)
 	touch $(porteus_iso)
 porteus_iso: $(porteus_iso)
 
-# TODO: from=/path/to/file.iso
 porteus_cfg := $(CONTENTS)/boot/grub/porteus.cfg.in
 $(porteus_cfg): $(porteus_iso)
 	$(call GEN_CONFIG,boot/porteus.iso,boot/syslinux,porteus.cfg,from,$(porteus_cfg))
@@ -104,6 +103,26 @@ $(kav_iso): | $(base)
 	wget -c -O $(kav_iso) http://rescuedisk.kaspersky-labs.com/rescuedisk/updatable/kav_rescue_10.iso
 	touch $(kav_iso)
 kav_iso: $(kav_iso)
+
+kav_files := $(CONTENTS)/boot/grub/kav.cfg.in $(CONTENTS)/liveusb
+$(kav_files): $(kav_iso)
+	echo 'submenu "Kaspersky Rescue Disk" {' > $(CONTENTS)/boot/grub/kav.cfg.in
+	echo set kav_lang=ru >> $(CONTENTS)/boot/grub/kav.cfg.in
+	7z e -so $(kav_iso) boot/grub/i386-pc/cfg/en.cfg >> $(CONTENTS)/boot/grub/kav.cfg.in
+	echo >> $(CONTENTS)/boot/grub/kav.cfg.in
+	$(foreach platform,efi pc, \
+		echo 'if [ $${grub_platrorm} = $(platform) ]; then' >> $(CONTENTS)/boot/grub/kav.cfg.in; \
+		7z e -so $(kav_iso) boot/grub/i386-$(platform)/cfg/kav_menu.cfg | awk -v iso=/rescue/rescue.iso ' \
+			($$1 == "menuentry") {$$0 = $$0 "\n\tloopback loop " iso} \
+			($$1 ~ /linux|initrd/) {$$2 = "(loop)" $$2} \
+			($$1 ~ /menuentry|linux|initrd|}/){print $$0} \
+			' >> $(CONTENTS)/boot/grub/kav.cfg.in; \
+		echo 'fi' >> $(CONTENTS)/boot/grub/kav.cfg.in; \
+	)
+# FIXME: I have to replace root=... with root=live:/dev/whatever in kernel parameters
+	echo '}' >> $(CONTENTS)/boot/grub/kav.cfg.in
+	touch $(CONTENTS)/liveusb
+kav_files: $(kav_files)
 
 drweb_iso := $(CONTENTS)/boot/drweb.iso
 $(drweb_iso): | $(base)
