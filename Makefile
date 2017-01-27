@@ -133,10 +133,17 @@ drweb_cfg: $(drweb_cfg)
 config := $(CONTENTS)/boot/grub/grub.cfg
 $(config): $(CONTENTS)/boot/grub/*.cfg.in | $(base)
 	echo "set gfxpayload=keep" > $(config)
-	for file in $^; do echo ". $$(basename $$file)" >> $(config); done
+	for file in $^; do echo ". \$$prefix/$$(basename $$file)" >> $(config); done
 config: $(config)
 
-# TODO: install loader on the thumbdrive, both BIOS boot sector and EFI files
+copy_over: $(config)
+	test -d "$(TARGET_DIR)"
+	rsync -rvP --inplace --modify-window=1 "$(CONTENTS)/" "$(TARGET_DIR)/"
 
-# TODO: copy the boot files to the bootable thumbdrive
-# rsync --inplace -rvP
+install_bootloader:
+	test -d "$(TARGET_DIR)" && test -b "$(TARGET_DEV)"
+	$(SUDO) grub-install --boot-directory="$(TARGET_DIR)/boot" --target=i386-pc "$(TARGET_DEV)"
+	$(foreach arch,i386 x86_64, \
+		$(SUDO) grub-install --boot-directory="$(TARGET_DIR)/boot" --target=$(arch)-efi \
+			--efi-directory="$(TARGET_DIR)" --removable --no-nvram; \
+	)
