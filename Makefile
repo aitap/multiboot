@@ -126,6 +126,18 @@ $(drweb_cfg): $(drweb_iso)
 	$(call GEN_CONFIG,boot/drweb.iso,isolinux,txt.cfg,iso-scan/filename,$(drweb_cfg),"DrWeb LiveDisk")
 drweb_cfg: $(drweb_cfg)
 
+memtest_iso := $(DOWNLOAD)/memtest.iso
+$(memtest_iso): | $(base)
+	wget -c -O $(DOWNLOAD)/memtest.tgz http://memtest86.com/downloads/memtest86-iso.tar.gz
+	tar xvOf $(DOWNLOAD)/memtest.tgz --wildcards "*.iso" > $(memtest_iso)
+memtest_iso: $(memtest_iso)
+
+memtest_files := $(CONTENTS)/boot/memtest86 $(CONTENTS)/boot/grub/memtest.cfg.in
+$(memtest_files): $(memtest_iso) $(CONFIGS)/memtest.cfg
+	7z e -o$(CONTENTS)/boot/memtest86 $(memtest_iso) EFI/BOOT/ ISOLINUX/MEMTEST
+	cp $(CONFIGS)/memtest.cfg $(CONTENTS)/boot/grub/memtest.cfg.in
+memtest_files: $(memtest_files)
+
 # build loader config
 
 config := $(CONTENTS)/boot/grub/grub.cfg
