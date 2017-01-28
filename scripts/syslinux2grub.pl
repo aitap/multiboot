@@ -64,7 +64,10 @@ sub apply_fixups {
 			}
 			# fixup the relative paths
 			for my $f ($_->{kernel}, @{$_->{initrd}}) {
-				$f = "${boot_path}/$f" if $f !~ m{^/};
+				 if ($f !~ m{^/}) { $f = "${boot_path}/$f" }
+				 elsif ($ENV{FORCE_BOOT_PATH}) {
+					$f =~ s{^.*(/[^/]+)$}{${boot_path}$1}
+				 }
 			}
 		} elsif ($_->{entries}) {
 			# recurse into submenus
@@ -130,9 +133,9 @@ sub export_grub2 {
 		} elsif ($_->{kernel}) {
 			$pr->(qq[menuentry "$_->{title}" {]);
 			$indent++;
-			$pr->(qq[loopback loop $image]);
-			$pr->(($_->{linux16} ? "linux16" : "linux"), " (loop)", join " ", $_->{kernel}, @{$_->{param}});
-			$pr->(join " ", "initrd", map "(loop)$_",@{$_->{initrd}}) if @{$_->{initrd}};
+			$pr->(qq[loopback loop $image]) if $image;
+			$pr->(($_->{linux16} ? "linux16" : "linux"), " ", ($image?"(loop)":()), join " ", $_->{kernel}, @{$_->{param}});
+			$pr->(join " ", "initrd", map { $image ? "(loop)$_" : $_ } @{$_->{initrd}}) if @{$_->{initrd}};
 			$indent--;
 			$pr->("}");
 		}

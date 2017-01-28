@@ -115,16 +115,22 @@ $(kav_files): $(kav_iso) scripts/kav_fixup.awk
 	touch $(CONTENTS)/liveusb
 kav_files: $(kav_files)
 
-drweb_iso := $(CONTENTS)/boot/drweb.iso
+drweb_iso := $(DOWNLOAD)/drweb.iso
 $(drweb_iso): | $(base)
 	wget -c -O $(drweb_iso) https://download.geo.drweb.com/pub/drweb/livedisk/drweb-livedisk-900-cd.iso
 	touch $(drweb_iso)
 drweb_iso: $(drweb_iso)
 
-drweb_cfg := $(CONTENTS)/boot/grub/drweb.cfg.in
-$(drweb_cfg): $(drweb_iso)
-	$(call GEN_CONFIG,boot/drweb.iso,isolinux,txt.cfg,iso-scan/filename,$(drweb_cfg),"DrWeb LiveDisk")
-drweb_cfg: $(drweb_cfg)
+# DrWeb LiveDisk's casper doesn't support iso-scan/filename
+drweb_files := $(CONTENTS)/boot/grub/drweb.cfg.in $(CONTENTS)/boot/drweb
+$(drweb_files): $(drweb_iso)
+	7z x -o$(CONTENTS) $(drweb_iso) .disk
+	7z e -o$(CONTENTS)/boot/drweb $(drweb_iso) casper
+	7z e -o$(CONTENTS)/boot/drweb $(drweb_iso) install/mt86plus
+	7z e -so $(drweb_iso) isolinux/txt.cfg \
+		| env FORCE_BOOT_PATH=1 perl "$(SCRIPTS)/syslinux2grub.pl" live-media-path=boot/drweb /boot/drweb "" "DrWeb LiveDisk" \
+		> $(CONTENTS)/boot/grub/drweb.cfg.in
+drweb_files: $(drweb_files)
 
 memtest_iso := $(DOWNLOAD)/memtest.iso
 $(memtest_iso): | $(base)
