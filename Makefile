@@ -8,7 +8,7 @@ SCRIPTS := scripts
 IMAGES := $(sysrcd_cfg) $(grub4dos_files)
 ALL_IMAGES := $(IMAGES) $(knoppix_files) $(porteus_cfg) $(kav_files) $(drweb_cfg)
 
-.PHONY: all clean
+.PHONY: all clean copy_over install_bootloader
 
 # macros
 
@@ -131,8 +131,8 @@ drweb_cfg: $(drweb_cfg)
 # build loader config
 
 config := $(CONTENTS)/boot/grub/grub.cfg
-$(config): $(CONTENTS)/boot/grub/*.cfg.in | $(base)
-	echo "set gfxpayload=keep" > $(config)
+$(config): $(CONTENTS)/boot/grub/*.cfg.in $(CONFIGS)/grub.cfg | $(base)
+	cp $(CONFIGS)/grub.cfg $(config)
 	for file in $^; do echo ". \$$prefix/$$(basename $$file)" >> $(config); done
 config: $(config)
 
