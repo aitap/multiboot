@@ -133,7 +133,7 @@ drweb_cfg: $(drweb_cfg)
 config := $(CONTENTS)/boot/grub/grub.cfg
 $(config): $(CONTENTS)/boot/grub/*.cfg.in $(CONFIGS)/grub.cfg | $(base)
 	cp $(CONFIGS)/grub.cfg $(config)
-	for file in $^; do echo ". \$$prefix/$$(basename $$file)" >> $(config); done
+	for file in $(CONTENTS)/boot/grub/*.cfg.in; do echo ". \$$prefix/$$(basename $$file)" >> $(config); done
 config: $(config)
 
 copy_over: $(config)
