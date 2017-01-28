@@ -107,11 +107,9 @@ $(kav_files): $(kav_iso) scripts/kav_fixup.awk
 	7z e -so $(kav_iso) boot/grub/i386-pc/cfg/en.cfg >> $(CONTENTS)/boot/grub/kav.cfg.in
 	echo >> $(CONTENTS)/boot/grub/kav.cfg.in
 	$(foreach platform,efi pc, \
-		echo 'if [ $${grub_platrorm} = $(platform) ]; then' >> $(CONTENTS)/boot/grub/kav.cfg.in; \
 		7z e -so $(kav_iso) boot/grub/i386-$(platform)/cfg/kav_menu.cfg \
-			| awk -f $(SCRIPTS)/kav_fixup.awk \
+			| awk -v platform=$(platform) -f $(SCRIPTS)/kav_fixup.awk \
 			>> $(CONTENTS)/boot/grub/kav.cfg.in; \
-		echo 'fi' >> $(CONTENTS)/boot/grub/kav.cfg.in; \
 	)
 	echo '}' >> $(CONTENTS)/boot/grub/kav.cfg.in
 	touch $(CONTENTS)/liveusb
