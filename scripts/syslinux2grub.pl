@@ -98,13 +98,13 @@ sub apply_fixups {
 					title => $_->{title}." (64-bit)",
 					kernel => $b64[0],
 					param => [ @b64[1..$#b64 ] ],
-					if => q{ [ ${grub_platform} != efi ] || [ ${grub_cpu} = x86_64 ] },
+					if => q{ [ ${grub_platform} != efi -o ${grub_cpu} = x86_64 ] },
 				},
 				{
 					title => $_->{title}." (32-bit)",
 					kernel => $b32[0],
 					param => [ @b32[1..$#b32 ] ],
-					if => q{ [ ${grub_platform} != efi ] || [ ${grub_cpu} = i386 ] },
+					if => q{ [ ${grub_platform} != efi -o ${grub_cpu} = i386 ] },
 				}
 			)
 		} : $_

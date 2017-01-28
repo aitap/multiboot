@@ -1,1 +1,3 @@
+! one if per menuentry {}, otherwise grub2 barfs and shows all of them
+! enable efi_gop and gfxterm for at least efi, it's required for efifb
 - less painful (as in: minimal user interaction) Secure Boot solution?
