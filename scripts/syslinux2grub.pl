@@ -80,7 +80,7 @@ sub apply_fixups {
 		# substitute the presets from table before all else
 		if (defined $_->{kernel} and $table->{$_->{kernel}}) {
 			for my $p (qw(param initrd)) {
-				$_->{$p} = [ @{ $table->{$_->{kernel}}{$p}||[] } ]; # deep copy
+				$_->{$p} = [ @{ $_->{$p} || [] }, @{ $table->{$_->{kernel}}{$p} || [] } ]; # deep copy
 			}
 			$_->{kernel} = $table->{$_->{kernel}}{kernel};
 		}

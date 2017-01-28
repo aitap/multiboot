@@ -1,3 +1,2 @@
-! syslinux2grub.pl overwrites kernel parameters of entries from lookup table
 ! one if per menuentry {}, otherwise grub2 barfs and shows all of them
 - less painful (as in: minimal user interaction) Secure Boot solution?
