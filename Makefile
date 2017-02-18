@@ -4,6 +4,7 @@ CONTENTS := contents
 DOWNLOAD := download
 CONFIGS := configs
 SCRIPTS := scripts
+SUDO := sudo
 
 IMAGES := $(sysrcd_cfg) $(grub4dos_files)
 ALL_IMAGES := $(IMAGES) $(knoppix_files) $(porteus_cfg) $(kav_files) $(drweb_cfg)
