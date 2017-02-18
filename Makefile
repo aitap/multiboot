@@ -155,10 +155,12 @@ $(config): $(CONTENTS)/boot/grub/*.cfg.in $(CONFIGS)/grub.cfg | $(base)
 config: $(config)
 
 copy_over: $(config)
+	# TARGET_DIR=$(TARGET_DIR)
 	test -d "$(TARGET_DIR)"
 	rsync -urvP --inplace --modify-window=2 "$(CONTENTS)/" "$(TARGET_DIR)/"
 
 install_bootloader:
+	# TARGET_DIR=$(TARGET_DIR) TARGET_DEV=$(TARGET_DEV)
 	test -d "$(TARGET_DIR)" && test -b "$(TARGET_DEV)"
 	$(SUDO) grub-install --boot-directory="$(TARGET_DIR)/boot" --target=i386-pc "$(TARGET_DEV)"
 	$(foreach arch,i386 x86_64, \
