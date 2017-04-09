@@ -2,11 +2,9 @@
 
 CONTENTS := contents
 DOWNLOAD := download
-CONFIGS := configs
-SCRIPTS := scripts
 
 IMAGES := $(sysrcd_cfg) $(grub4dos_files)
-ALL_IMAGES := $(IMAGES) $(knoppix_files) $(porteus_cfg) $(kav_files) $(drweb_cfg)
+ALL_IMAGES := $(IMAGES) $(knoppix_files) $(porteus_cfg) $(kav_files) $(drweb_cfg) $(memtest_files)
 
 .PHONY: all clean copy_over install_bootloader
 
@@ -15,18 +13,19 @@ ALL_IMAGES := $(IMAGES) $(knoppix_files) $(porteus_cfg) $(kav_files) $(drweb_cfg
 # url, regexp, save_to
 define LOAD_LINK
 	@echo -e '\e[1m[ DOWNLOAD ]\e[0m $(1) -> $(2) -> $(3)'
-	@perl "$(SCRIPTS)/download.pl" "$(1)" "$(3)" $(2)
+	@perl "scripts/download.pl" "$(1)" "$(3)" $(2)
 endef
 
 # image boot_path config kernel_parameter target_config [title]
 define GEN_CONFIG
 	@echo -e '\e[1m[ GENERATE CONFIG ]\e[0m $(1) / $(2) / $(3) + $(4) -> $(5)'
-	@7z e -so $(CONTENTS)/$(1) $(2)/$(3) | perl "$(SCRIPTS)/syslinux2grub.pl" $(4)=/$(1) /$(2) /$(1) $(6) > $(5)
+	@7z e -so $(CONTENTS)/$(1) $(2)/$(3) | perl "scripts/syslinux2grub.pl" $(4)=/$(1) /$(2) /$(1) $(6) > $(5)
 endef
 
 # base
 
 all: $(base) $(IMAGES) $(config)
+all_images: $(all) $(ALL_IMAGES)
 
 base := $(DOWNLOAD) $(CONTENTS) $(CONTENTS)/boot/grub
 $(base):
@@ -57,9 +56,9 @@ $(grub4dos_7z): | $(base)
 grub4dos_7z: $(grub4dos_7z)
 
 grub4dos_files := $(CONTENTS)/boot/grub.exe $(CONTENTS)/boot/grub/grub4dos.cfg.in
-$(grub4dos_files): $(grub4dos_7z) $(CONFIGS)/grub4dos.cfg
+$(grub4dos_files): $(grub4dos_7z) configs/grub4dos.cfg
 	7z e -y -i'!grub4dos-*/grub.exe' -o"$(CONTENTS)/boot" "$(DOWNLOAD)/grub4dos.7z"
-	cp -v "$(CONFIGS)/grub4dos.cfg" "$(CONTENTS)/boot/grub/grub4dos.cfg.in"
+	cp -v "configs/grub4dos.cfg" "$(CONTENTS)/boot/grub/grub4dos.cfg.in"
 	touch $(grub4dos_files)
 grub4dos_files: $(grub4dos_files)
 
@@ -86,10 +85,10 @@ knoppix_iso: $(knoppix_iso)
 
 # Knoppix has to be unpacked because it's more than 4G, but consists of less-than-4G files
 knoppix_files := $(CONTENTS)/boot/KNOPPIX $(CONTENTS)/boot/grub/knoppix.cfg.in
-$(knoppix_files): $(knoppix_iso) $(CONFIGS)/knoppix.cfg
+$(knoppix_files): $(knoppix_iso) configs/knoppix.cfg
 	7z x -o$(CONTENTS)/boot $(knoppix_iso) KNOPPIX/KNOPPIX KNOPPIX/KNOPPIX1 KNOPPIX/kversion
 	7z e -o$(CONTENTS)/boot/KNOPPIX $(knoppix_iso) $(foreach f,linux linux64 minirt.gz,boot/isolinux/$(f))
-	cp -v $(CONFIGS)/knoppix.cfg $(CONTENTS)/boot/grub/knoppix.cfg.in
+	cp -v configs/knoppix.cfg $(CONTENTS)/boot/grub/knoppix.cfg.in
 	touch $(knoppix_files)
 knoppix_files: $(knoppix_files)
 
@@ -108,7 +107,7 @@ $(kav_files): $(kav_iso) scripts/kav_fixup.awk
 	echo >> $(CONTENTS)/boot/grub/kav.cfg.in
 	$(foreach platform,efi pc, \
 		7z e -so $(kav_iso) boot/grub/i386-$(platform)/cfg/kav_menu.cfg \
-			| awk -v platform=$(platform) -f $(SCRIPTS)/kav_fixup.awk \
+			| awk -v platform=$(platform) -f scripts/kav_fixup.awk \
 			>> $(CONTENTS)/boot/grub/kav.cfg.in; \
 	)
 	echo '}' >> $(CONTENTS)/boot/grub/kav.cfg.in
@@ -128,7 +127,7 @@ $(drweb_files): $(drweb_iso)
 	7z e -o$(CONTENTS)/boot/drweb $(drweb_iso) casper
 	7z e -o$(CONTENTS)/boot/drweb $(drweb_iso) install/mt86plus
 	7z e -so $(drweb_iso) isolinux/txt.cfg \
-		| env FORCE_BOOT_PATH=1 perl "$(SCRIPTS)/syslinux2grub.pl" live-media-path=boot/drweb /boot/drweb "" "DrWeb LiveDisk" \
+		| env FORCE_BOOT_PATH=1 perl "scripts/syslinux2grub.pl" live-media-path=boot/drweb /boot/drweb "" "DrWeb LiveDisk" \
 		> $(CONTENTS)/boot/grub/drweb.cfg.in
 drweb_files: $(drweb_files)
 
@@ -139,16 +138,16 @@ $(memtest_iso): | $(base)
 memtest_iso: $(memtest_iso)
 
 memtest_files := $(CONTENTS)/boot/memtest86 $(CONTENTS)/boot/grub/memtest.cfg.in
-$(memtest_files): $(memtest_iso) $(CONFIGS)/memtest.cfg
+$(memtest_files): $(memtest_iso) configs/memtest.cfg
 	7z e -o$(CONTENTS)/boot/memtest86 $(memtest_iso) EFI/BOOT/ ISOLINUX/MEMTEST
-	cp $(CONFIGS)/memtest.cfg $(CONTENTS)/boot/grub/memtest.cfg.in
+	cp configs/memtest.cfg $(CONTENTS)/boot/grub/memtest.cfg.in
 memtest_files: $(memtest_files)
 
 # build loader config
 
 config := $(CONTENTS)/boot/grub/grub.cfg
-$(config): $(CONTENTS)/boot/grub/*.cfg.in $(CONFIGS)/grub.cfg | $(base)
-	cp $(CONFIGS)/grub.cfg $(config)
+$(config): $(CONTENTS)/boot/grub/*.cfg.in configs/grub.cfg | $(base)
+	cp configs/grub.cfg $(config)
 	for file in $(CONTENTS)/boot/grub/*.cfg.in; do echo ". \$$prefix/$$(basename $$file)" >> $(config); done
 config: $(config)
 

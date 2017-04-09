@@ -2,17 +2,22 @@ Welcome!
 
 This Makefile allows you to build yourself a multiboot thumbdrive from the following set of images:
 default:
- - SystemRescueCD (http://sysresccd.org)
- - Debian stable netinstall (http://debian.org)
- - GRUB4DOS (http://grub4dos-chenall.googlecode.com)
+ - SystemRescueCD (http://sysresccd.org/)
+ - GRUB4DOS (http://grub4dos.chenall.net/)
 optional:
  - Porteus (http://porteus.org/)
+ - KNOPPIX (http://knoppix.net/)
+ - Kaspersky Rescue Disk (http://support.kaspersky.com/viruses/rescuedisk/)
+ - DrWeb LiveDisk (http://www.freedrweb.com/livedisk/)
+ - Memtest86 (http://memtest86.com)
 
 Useful make rules:
 
-all: build live directory structure
-install-usb: install multi-boot compilation to usb-drive (you'll have to define TARGET=/dev/sdXY)
-clean: self-explanatory :)
+all: build live directory structure with default images
+all_images: as above but including optional images, too
+clean: remove all downloaded, unpacked and generated files
+copy_over: copy the live directory structure to the live device mountpoint specified by TARGET_DIR
+install_bootloader: install the bootloader to the device specified by TARGET_DEV
 
 Useful variables:
 
@@ -22,22 +27,14 @@ CONTENTS = ./contents/
 DOWNLOAD = ./download/
 	where to download and uncompress files
 
-CONFIGS = ./configs/
-	where the config files are stored
+TARGET_DIR (unset)
+	where the bootable medium is mounted (i.e. /media/mybootdevice)
 
-MOUNTPOINT = /mnt
-	where to mount iso images and usb drive
+TARGET_DEV (unset)
+	where to install the bootloader (i.e. /dev/sdz)
 
-MOUNT = mount
-	what to run to mount source images (try `sudo mount` or `fuseiso`)
-
-UMOUNT = umount
-	whet to run to unmount mounted images (try `sudo umount` or `fusermount -u`)
-
-TARGET (unset)
-	where to install live-usb (e.g. /dev/sdz3)
 
 Additional parameters:
 
 porteus_desktop = XFCE
-	Used to select ISO image of Porteus to download, see http://dl.porteus.org/i486/current/ for full list
+	Used to select ISO image of Porteus to download, see http://dl.porteus.org/i586/current/ for full list
