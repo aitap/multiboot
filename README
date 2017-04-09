@@ -19,7 +19,8 @@ clean: remove all downloaded, unpacked and generated files
 copy_over: copy the live directory structure to the live device mountpoint specified by TARGET_DIR
 install_bootloader: install the bootloader to the device specified by TARGET_DEV
 
-Useful variables:
+
+Config variables:
 
 CONTENTS = ./contents/
 	where to store live cd contents
@@ -32,6 +33,9 @@ TARGET_DIR (unset)
 
 TARGET_DEV (unset)
 	where to install the bootloader (i.e. /dev/sdz)
+
+SUDO = sudo
+	which command to prefix the superuser-requiring commands with
 
 
 Additional parameters:

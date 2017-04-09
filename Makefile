@@ -2,11 +2,12 @@
 
 CONTENTS := contents
 DOWNLOAD := download
+SUDO := sudo
 
-IMAGES := $(sysrcd_cfg) $(grub4dos_files)
-ALL_IMAGES := $(IMAGES) $(knoppix_files) $(porteus_cfg) $(kav_files) $(drweb_cfg) $(memtest_files)
+IMAGES := $(sysrcd) $(grub4dos)
+ALL_IMAGES := $(IMAGES) $(knoppix) $(porteus) $(kav) $(drweb) $(memtest)
 
-.PHONY: all clean copy_over install_bootloader
+.PHONY: clean copy_over install_bootloader
 
 # macros
 
@@ -25,7 +26,7 @@ endef
 # base
 
 all: $(base) $(IMAGES) $(config)
-all_images: $(all) $(ALL_IMAGES)
+all_images: all $(ALL_IMAGES)
 
 base := $(DOWNLOAD) $(CONTENTS) $(CONTENTS)/boot/grub
 $(base):
@@ -44,10 +45,10 @@ $(sysrcd_iso): | $(base)
 	touch $(sysrcd_iso)
 sysrcd_iso: $(sysrcd_iso)
 
-sysrcd_cfg := $(CONTENTS)/boot/grub/sysrcd.cfg.in
-$(sysrcd_cfg): $(sysrcd_iso)
-	$(call GEN_CONFIG,boot/sysrcd.iso,isolinux,isolinux.cfg,isoloop,$(sysrcd_cfg))
-sysrcd_cfg: $(sysrcd_cfg)
+sysrcd := $(CONTENTS)/boot/grub/sysrcd.cfg.in
+$(sysrcd): $(sysrcd_iso)
+	$(call GEN_CONFIG,boot/sysrcd.iso,isolinux,isolinux.cfg,isoloop,$(sysrcd))
+sysrcd: $(sysrcd)
 
 grub4dos_7z := $(DOWNLOAD)/grub4dos.7z
 $(grub4dos_7z): | $(base)
@@ -55,12 +56,12 @@ $(grub4dos_7z): | $(base)
 	touch $(grub4dos_7z)
 grub4dos_7z: $(grub4dos_7z)
 
-grub4dos_files := $(CONTENTS)/boot/grub.exe $(CONTENTS)/boot/grub/grub4dos.cfg.in
-$(grub4dos_files): $(grub4dos_7z) configs/grub4dos.cfg
+grub4dos := $(CONTENTS)/boot/grub.exe $(CONTENTS)/boot/grub/grub4dos.cfg.in
+$(grub4dos): $(grub4dos_7z) configs/grub4dos.cfg
 	7z e -y -i'!grub4dos-*/grub.exe' -o"$(CONTENTS)/boot" "$(DOWNLOAD)/grub4dos.7z"
 	cp -v "configs/grub4dos.cfg" "$(CONTENTS)/boot/grub/grub4dos.cfg.in"
-	touch $(grub4dos_files)
-grub4dos_files: $(grub4dos_files)
+	touch $(grub4dos)
+grub4dos: $(grub4dos)
 
 porteus_desktop := XFCE
 
@@ -71,10 +72,10 @@ $(porteus_iso): | $(base)
 	touch $(porteus_iso)
 porteus_iso: $(porteus_iso)
 
-porteus_cfg := $(CONTENTS)/boot/grub/porteus.cfg.in
-$(porteus_cfg): $(porteus_iso)
-	$(call GEN_CONFIG,boot/porteus.iso,boot/syslinux,porteus.cfg,from,$(porteus_cfg))
-porteus_cfg: $(porteus_cfg)
+porteus := $(CONTENTS)/boot/grub/porteus.cfg.in
+$(porteus): $(porteus_iso)
+	$(call GEN_CONFIG,boot/porteus.iso,boot/syslinux,porteus.cfg,from,$(porteus))
+porteus: $(porteus)
 
 # For now, update torrent URL manually. It's not like KNOPPIX is released every week.
 knoppix_torrent := http://torrent.unix-ag.uni-kl.de/torrents/KNOPPIX_V7.7.1DVD-2016-10-22-EN.torrent
@@ -84,13 +85,13 @@ $(knoppix_iso): | $(base)
 knoppix_iso: $(knoppix_iso)
 
 # Knoppix has to be unpacked because it's more than 4G, but consists of less-than-4G files
-knoppix_files := $(CONTENTS)/boot/KNOPPIX $(CONTENTS)/boot/grub/knoppix.cfg.in
-$(knoppix_files): $(knoppix_iso) configs/knoppix.cfg
+knoppix := $(CONTENTS)/boot/KNOPPIX $(CONTENTS)/boot/grub/knoppix.cfg.in
+$(knoppix): $(knoppix_iso) configs/knoppix.cfg
 	7z x -o$(CONTENTS)/boot $(knoppix_iso) KNOPPIX/KNOPPIX KNOPPIX/KNOPPIX1 KNOPPIX/kversion
 	7z e -o$(CONTENTS)/boot/KNOPPIX $(knoppix_iso) $(foreach f,linux linux64 minirt.gz,boot/isolinux/$(f))
 	cp -v configs/knoppix.cfg $(CONTENTS)/boot/grub/knoppix.cfg.in
-	touch $(knoppix_files)
-knoppix_files: $(knoppix_files)
+	touch $(knoppix)
+knoppix: $(knoppix)
 
 kav_iso := $(CONTENTS)/rescue/rescue.iso
 $(kav_iso): | $(base)
@@ -99,8 +100,8 @@ $(kav_iso): | $(base)
 	touch $(kav_iso)
 kav_iso: $(kav_iso)
 
-kav_files := $(CONTENTS)/boot/grub/kav.cfg.in $(CONTENTS)/liveusb
-$(kav_files): $(kav_iso) scripts/kav_fixup.awk
+kav := $(CONTENTS)/boot/grub/kav.cfg.in $(CONTENTS)/liveusb
+$(kav): $(kav_iso) scripts/kav_fixup.awk
 	echo 'submenu "Kaspersky Rescue Disk" {' > $(CONTENTS)/boot/grub/kav.cfg.in
 	echo set kav_lang=ru >> $(CONTENTS)/boot/grub/kav.cfg.in
 	7z e -so $(kav_iso) boot/grub/i386-pc/cfg/en.cfg >> $(CONTENTS)/boot/grub/kav.cfg.in
@@ -112,7 +113,7 @@ $(kav_files): $(kav_iso) scripts/kav_fixup.awk
 	)
 	echo '}' >> $(CONTENTS)/boot/grub/kav.cfg.in
 	touch $(CONTENTS)/liveusb
-kav_files: $(kav_files)
+kav: $(kav)
 
 drweb_iso := $(DOWNLOAD)/drweb.iso
 $(drweb_iso): | $(base)
@@ -121,15 +122,15 @@ $(drweb_iso): | $(base)
 drweb_iso: $(drweb_iso)
 
 # DrWeb LiveDisk's casper doesn't support iso-scan/filename
-drweb_files := $(CONTENTS)/boot/grub/drweb.cfg.in $(CONTENTS)/boot/drweb
-$(drweb_files): $(drweb_iso)
+drweb := $(CONTENTS)/boot/grub/drweb.cfg.in $(CONTENTS)/boot/drweb
+$(drweb): $(drweb_iso)
 	7z x -o$(CONTENTS) $(drweb_iso) .disk
 	7z e -o$(CONTENTS)/boot/drweb $(drweb_iso) casper
 	7z e -o$(CONTENTS)/boot/drweb $(drweb_iso) install/mt86plus
 	7z e -so $(drweb_iso) isolinux/txt.cfg \
 		| env FORCE_BOOT_PATH=1 perl "scripts/syslinux2grub.pl" live-media-path=boot/drweb /boot/drweb "" "DrWeb LiveDisk" \
 		> $(CONTENTS)/boot/grub/drweb.cfg.in
-drweb_files: $(drweb_files)
+drweb: $(drweb)
 
 memtest_iso := $(DOWNLOAD)/memtest.iso
 $(memtest_iso): | $(base)
@@ -137,11 +138,11 @@ $(memtest_iso): | $(base)
 	tar xvOf $(DOWNLOAD)/memtest.tgz --wildcards "*.iso" > $(memtest_iso)
 memtest_iso: $(memtest_iso)
 
-memtest_files := $(CONTENTS)/boot/memtest86 $(CONTENTS)/boot/grub/memtest.cfg.in
-$(memtest_files): $(memtest_iso) configs/memtest.cfg
+memtest := $(CONTENTS)/boot/memtest86 $(CONTENTS)/boot/grub/memtest.cfg.in
+$(memtest): $(memtest_iso) configs/memtest.cfg
 	7z e -o$(CONTENTS)/boot/memtest86 $(memtest_iso) EFI/BOOT/ ISOLINUX/MEMTEST
 	cp configs/memtest.cfg $(CONTENTS)/boot/grub/memtest.cfg.in
-memtest_files: $(memtest_files)
+memtest: $(memtest)
 
 # build loader config
 
@@ -152,10 +153,12 @@ $(config): $(CONTENTS)/boot/grub/*.cfg.in configs/grub.cfg | $(base)
 config: $(config)
 
 copy_over: $(config)
+	# TARGET_DIR=$(TARGET_DIR)
 	test -d "$(TARGET_DIR)"
 	rsync -urvP --inplace --modify-window=2 "$(CONTENTS)/" "$(TARGET_DIR)/"
 
 install_bootloader:
+	# TARGET_DIR=$(TARGET_DIR) TARGET_DEV=$(TARGET_DEV)
 	test -d "$(TARGET_DIR)" && test -b "$(TARGET_DEV)"
 	$(SUDO) grub-install --boot-directory="$(TARGET_DIR)/boot" --target=i386-pc "$(TARGET_DEV)"
 	$(foreach arch,i386 x86_64, \
