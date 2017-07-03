@@ -4,9 +4,6 @@ CONTENTS := contents
 DOWNLOAD := download
 SUDO := sudo
 
-IMAGES := $(sysrcd) $(grub4dos)
-ALL_IMAGES := $(IMAGES) $(knoppix) $(porteus) $(kav) $(drweb) $(memtest)
-
 .PHONY: clean copy_over install_bootloader
 
 # macros
@@ -25,17 +22,11 @@ endef
 
 # base
 
-all: $(base) $(IMAGES) $(config)
-all_images: all $(ALL_IMAGES)
-
 base := $(DOWNLOAD) $(CONTENTS) $(CONTENTS)/boot/grub
 $(base):
 	mkdir -pv $(base)
 	touch $(base)
 base: $(base)
-
-clean:
-	rm -rvf $(ALL_IMAGES) $(CONTENTS) $(DOWNLOAD)
 
 # images themselves, download and extract separately
 
@@ -165,3 +156,14 @@ install_bootloader:
 		$(SUDO) grub-install --boot-directory="$(TARGET_DIR)/boot" --target=$(arch)-efi \
 			--efi-directory="$(TARGET_DIR)" --removable --no-nvram; \
 	)
+
+# now that we've defined all the variables, time to define the "all" rules
+
+IMAGES = $(sysrcd) $(grub4dos)
+EXTRA_IMAGES = $(IMAGES) $(knoppix) $(porteus) $(kav) $(drweb) $(memtest)
+
+all: $(base) $(IMAGES) $(config)
+all_images: $(EXTRA_IMAGES) all
+
+clean:
+	rm -rvf $(IMAGES) $(EXTRA_IMAGES) $(CONTENTS) $(DOWNLOAD)
