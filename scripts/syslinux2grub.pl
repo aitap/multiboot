@@ -9,7 +9,7 @@ sub parse_syslinux {
 	my %lookup;
 	my $title;
 	my %actions = (
-		label => sub { push @{$_[0]}, $lookup{$_[1]} = {}; },
+		label => sub { push @{$_[0]}, $lookup{$_[1]} = {}; $_[0]->[-1]{title} = join " ", @_[1..$#_] },
 		menu => sub {
 			my %menu = (
 				label => sub { $_[0]->[-1]{title} = join " ", @_[1..$#_] },
