@@ -160,7 +160,7 @@ config: $(config)
 copy_over: $(config)
 	# TARGET_DIR=$(TARGET_DIR)
 	test -d "$(TARGET_DIR)"
-	rsync -urvP --inplace --modify-window=2 "$(CONTENTS)/" "$(TARGET_DIR)/"
+	rsync -urtvP --inplace --modify-window=2 "$(CONTENTS)/" "$(TARGET_DIR)/"
 
 install_bootloader:
 	# TARGET_DIR=$(TARGET_DIR) TARGET_DEV=$(TARGET_DEV)
