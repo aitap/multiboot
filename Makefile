@@ -132,6 +132,20 @@ $(memtest): $(memtest_iso) configs/memtest.cfg
 	cp configs/memtest.cfg $(CONTENTS)/boot/grub/memtest.cfg.in
 memtest: $(memtest)
 
+debian_desktop := xfce
+
+debian_iso := $(CONTENTS)/boot/debian.iso
+$(debian_iso): | $(base)
+	@echo "Additional parameters: debian_desktop=$(debian_desktop)"
+	$(call LOAD_LINK,https://cdimage.debian.org/images/unofficial/non-free/images-including-firmware/current-live/i386/iso-hybrid/,debian-live-[0-9.]+-i386-$(debian_desktop)\\+nonfree\\.iso,$(debian_iso))
+	touch $(debian_iso)
+debian_iso: $(debian_iso)
+
+debian := $(CONTENTS)/boot/grub/debian.cfg.in
+$(debian): $(debian_iso)
+	$(call GEN_CONFIG,boot/debian.iso,isolinux,menu.cfg,findiso,$(debian),"Debian Live")
+debian: $(debian)
+
 # build loader config
 
 config := $(CONTENTS)/boot/grub/grub.cfg
@@ -143,7 +157,7 @@ config: $(config)
 copy_over: $(config)
 	# TARGET_DIR=$(TARGET_DIR)
 	test -d "$(TARGET_DIR)"
-	rsync -urvP --inplace --modify-window=2 "$(CONTENTS)/" "$(TARGET_DIR)/"
+	rsync -urtvP --inplace --modify-window=2 "$(CONTENTS)/" "$(TARGET_DIR)/"
 
 install_bootloader:
 	# TARGET_DIR=$(TARGET_DIR) TARGET_DEV=$(TARGET_DEV)
