@@ -84,26 +84,23 @@ $(knoppix): $(knoppix_iso) configs/knoppix.cfg
 	touch $(knoppix)
 knoppix: $(knoppix)
 
-kav_iso := $(CONTENTS)/rescue/rescue.iso
+kav_iso := $(CONTENTS)/data/kav.iso
 $(kav_iso): | $(base)
-	mkdir -pv $(CONTENTS)/rescue
-	wget -c -O $(kav_iso) http://rescuedisk.kaspersky-labs.com/rescuedisk/updatable/kav_rescue_10.iso
+	mkdir -p $(CONTENTS)/data
+	wget -c -O $(kav_iso) https://rescuedisk.s.kaspersky-labs.com/updatable/2018/krd.iso
 	touch $(kav_iso)
 kav_iso: $(kav_iso)
 
 kav := $(CONTENTS)/boot/grub/kav.cfg.in $(CONTENTS)/liveusb
 $(kav): $(kav_iso) scripts/kav_fixup.awk
 	echo 'submenu "Kaspersky Rescue Disk" {' > $(CONTENTS)/boot/grub/kav.cfg.in
-	echo set kav_lang=ru >> $(CONTENTS)/boot/grub/kav.cfg.in
-	7z e -so $(kav_iso) boot/grub/i386-pc/cfg/en.cfg >> $(CONTENTS)/boot/grub/kav.cfg.in
+	echo set lang=ru >> $(CONTENTS)/boot/grub/kav.cfg.in
+	7z e -so $(kav_iso) boot/grub/cfg/en.cfg >> $(CONTENTS)/boot/grub/kav.cfg.in
 	echo >> $(CONTENTS)/boot/grub/kav.cfg.in
-	$(foreach platform,efi pc, \
-		7z e -so $(kav_iso) boot/grub/i386-$(platform)/cfg/kav_menu.cfg \
-			| awk -v platform=$(platform) -f scripts/kav_fixup.awk \
-			>> $(CONTENTS)/boot/grub/kav.cfg.in; \
-	)
+	7z e -so $(kav_iso) boot/grub/i386-pc/cfg/kav_menu.cfg \
+		| awk -v platform=$(platform) -f scripts/kav_fixup.awk \
+		>> $(CONTENTS)/boot/grub/kav.cfg.in; \
 	echo '}' >> $(CONTENTS)/boot/grub/kav.cfg.in
-	touch $(CONTENTS)/liveusb
 kav: $(kav)
 
 drweb_iso := $(DOWNLOAD)/drweb.iso
