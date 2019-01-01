@@ -69,8 +69,8 @@ $(porteus): $(porteus_iso)
 porteus: $(porteus)
 
 # For now, update torrent URL manually. It's not like KNOPPIX is released every week.
-knoppix_torrent := http://torrent.unix-ag.uni-kl.de/torrents/KNOPPIX_V7.7.1DVD-2016-10-22-EN.torrent
-knoppix_iso := $(DOWNLOAD)/KNOPPIX_V7.7.1DVD-2016-10-22-EN/KNOPPIX_V7.7.1DVD-2016-10-22-EN.iso
+knoppix_torrent := http://torrent.unix-ag.uni-kl.de/torrents/KNOPPIX_V8.2-2018-05-10-EN.torrent
+knoppix_iso := $(DOWNLOAD)/KNOPPIX_V8.2-2018-05-10-EN/KNOPPIX_V8.2-2018-05-10-EN.iso
 $(knoppix_iso): | $(base)
 	aria2c --seed-time=0 --allow-overwrite=true -d $(DOWNLOAD) $(knoppix_torrent) # please seed separately
 knoppix_iso: $(knoppix_iso)
@@ -171,7 +171,7 @@ install_bootloader:
 # now that we've defined all the variables, time to define the "all" rules
 
 IMAGES = $(sysrcd) $(grub4dos)
-EXTRA_IMAGES = $(IMAGES) $(knoppix) $(porteus) $(kav) $(drweb) $(memtest)
+EXTRA_IMAGES = $(IMAGES) $(knoppix) $(porteus) $(kav) $(drweb) $(memtest) $(debian)
 
 all: $(base) $(IMAGES) $(config)
 all_images: $(EXTRA_IMAGES) all
