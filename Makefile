@@ -32,13 +32,13 @@ base: $(base)
 
 sysrcd_iso := $(CONTENTS)/boot/sysrcd.iso
 $(sysrcd_iso): | $(base)
-	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-x86-[\\d.]+\\.iso/download,$(sysrcd_iso))
+	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-[\\d.]+\\.iso systemrescuecd-[\\d.]+\\.iso,$(sysrcd_iso))
 	touch $(sysrcd_iso)
 sysrcd_iso: $(sysrcd_iso)
 
 sysrcd := $(CONTENTS)/boot/grub/sysrcd.cfg.in
 $(sysrcd): $(sysrcd_iso)
-	$(call GEN_CONFIG,boot/sysrcd.iso,isolinux,isolinux.cfg,isoloop,$(sysrcd))
+	$(call GEN_CONFIG,boot/sysrcd.iso,sysresccd/boot/syslinux,sysresccd_sys.cfg,img_loop,$(sysrcd),"System Rescue CD")
 sysrcd: $(sysrcd)
 
 grub4dos_7z := $(DOWNLOAD)/grub4dos.7z
