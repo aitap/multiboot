@@ -120,17 +120,29 @@ $(drweb): $(drweb_iso)
 		> $(CONTENTS)/boot/grub/drweb.cfg.in
 drweb: $(drweb)
 
-memtest_iso := $(DOWNLOAD)/memtest.iso
-$(memtest_iso): | $(base)
-	wget -c -O $(DOWNLOAD)/memtest.tgz http://memtest86.com/downloads/memtest86-iso.tar.gz
-	tar xvOf $(DOWNLOAD)/memtest.tgz --wildcards "*.iso" > $(memtest_iso)
-memtest_iso: $(memtest_iso)
+memtest_img := $(DOWNLOAD)/MemTest86.img
+$(memtest_img): | $(base)
+	wget -c -O $(DOWNLOAD)/memtest.zip http://memtest86.com/downloads/memtest86-usb.zip
+	7z e -o$(DOWNLOAD) $(DOWNLOAD)/memtest.zip memtest86-usb.img
+	7z e -o$(DOWNLOAD) $(DOWNLOAD)/memtest86-usb.img MemTest86.img
+
+memtest_img: $(memtest_img)
 
 memtest := $(CONTENTS)/boot/memtest86 $(CONTENTS)/boot/grub/memtest.cfg.in
-$(memtest): $(memtest_iso) configs/memtest.cfg
-	7z e -o$(CONTENTS)/boot/memtest86 $(memtest_iso) EFI/BOOT/ ISOLINUX/MEMTEST
+$(memtest): $(memtest_img) configs/memtest.cfg
+	7z e -o$(CONTENTS)/boot/memtest86 $(memtest_img) EFI/BOOT/
 	cp configs/memtest.cfg $(CONTENTS)/boot/grub/memtest.cfg.in
 memtest: $(memtest)
+
+memtestplus_bin := $(DOWNLOAD)/memtest86+-5.01.bin.gz
+$(memtestplus_bin): | $(base)
+	wget -O $(memtestplus_bin) http://www.memtest.org/download/5.01/memtest86+-5.01.bin.gz
+
+memtestplus := $(CONTENTS)/boot/memtest86+.bin $(CONTENTS)/boot/grub/memtestplus.cfg.in
+$(memtestplus): $(memtestplus_bin) configs/memtestplus.cfg
+	zcat $(memtestplus_bin) > $(CONTENTS)/boot/memtest86+.bin
+	cp configs/memtestplus.cfg $(CONTENTS)/boot/grub/memtestplus.cfg.in
+memtestplus: $(memtestplus)
 
 debian_desktop := xfce
 
@@ -171,7 +183,7 @@ install_bootloader:
 # now that we've defined all the variables, time to define the "all" rules
 
 IMAGES = $(sysrcd) $(grub4dos)
-EXTRA_IMAGES = $(IMAGES) $(knoppix) $(porteus) $(kav) $(drweb) $(memtest) $(debian)
+EXTRA_IMAGES = $(IMAGES) $(knoppix) $(porteus) $(kav) $(drweb) $(memtest) $(memtestplus) $(debian)
 
 all: $(base) $(IMAGES) $(config)
 all_images: $(EXTRA_IMAGES) all
