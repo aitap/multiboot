@@ -38,7 +38,12 @@ sysrcd_iso: $(sysrcd_iso)
 
 sysrcd := $(CONTENTS)/boot/grub/sysrcd.cfg.in
 $(sysrcd): $(sysrcd_iso)
-	$(call GEN_CONFIG,boot/sysrcd.iso,sysresccd/boot/syslinux,sysresccd_sys.cfg,img_loop,$(sysrcd),"System Rescue CD")
+	echo 'submenu "System Rescue CD" {' > $(sysrcd)
+	7z e -so $(sysrcd_iso) boot/grub/grubsrcd.cfg \
+		| awk -v path=/boot/sysrcd.iso -v uuid=1 -f scripts/grub2_fixup.awk \
+			-v addparams='img_dev=/dev/disk/by-uuid/$$rootuuid img_loop=/boot/sysrcd.iso' \
+		>> $(sysrcd)
+	echo '}' >> $(sysrcd)
 sysrcd: $(sysrcd)
 
 grub4dos_7z := $(DOWNLOAD)/grub4dos.7z
