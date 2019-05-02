@@ -98,7 +98,7 @@ $(kav): $(kav_iso) scripts/kav_fixup.awk
 	7z e -so $(kav_iso) boot/grub/cfg/en.cfg >> $(CONTENTS)/boot/grub/kav.cfg.in
 	echo >> $(CONTENTS)/boot/grub/kav.cfg.in
 	7z e -so $(kav_iso) boot/grub/i386-pc/cfg/kav_menu.cfg \
-		| awk -v platform=$(platform) -f scripts/kav_fixup.awk \
+		| awk -v path=/data/kav.iso -v addparams=isoloop=kav.iso -f scripts/grub2_fixup.awk \
 		>> $(CONTENTS)/boot/grub/kav.cfg.in; \
 	echo '}' >> $(CONTENTS)/boot/grub/kav.cfg.in
 kav: $(kav)
