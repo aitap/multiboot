@@ -32,7 +32,7 @@ base: $(base)
 
 sysrcd_iso := $(CONTENTS)/boot/sysrcd.iso
 $(sysrcd_iso): | $(base)
-	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-[\\d.]+\\.iso systemrescuecd-[\\d.]+\\.iso,$(sysrcd_iso))
+	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-[\\d.]+\\.iso$$ systemrescuecd-[\\d.]+\\.iso,$(sysrcd_iso))
 	touch $(sysrcd_iso)
 sysrcd_iso: $(sysrcd_iso)
 
