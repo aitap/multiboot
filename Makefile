@@ -30,9 +30,12 @@ base: $(base)
 
 # images themselves, download and extract separately
 
+sysrcd_arch := amd64
+
 sysrcd_iso := $(CONTENTS)/boot/sysrcd.iso
 $(sysrcd_iso): | $(base)
-	$(call LOAD_LINK,http://www.sysresccd.org/Download,systemrescuecd-[\\d.]+\\.iso$$ systemrescuecd-[\\d.]+\\.iso,$(sysrcd_iso))
+	@echo "Additional parameters: sysrcd_arch=$(sysrcd_arch)"
+	$(call LOAD_LINK,https://www.system-rescue-cd.org/Download/,systemrescuecd-$(sysrcd_arch)-[\\d.]+\\.iso$$ systemrescuecd-$(sysrcd_arch)-[\\d.]+\\.iso,$(sysrcd_iso))
 	touch $(sysrcd_iso)
 sysrcd_iso: $(sysrcd_iso)
 
@@ -74,8 +77,8 @@ $(porteus): $(porteus_iso)
 porteus: $(porteus)
 
 # For now, update torrent URL manually. It's not like KNOPPIX is released every week.
-knoppix_torrent := http://torrent.unix-ag.uni-kl.de/torrents/KNOPPIX_V8.2-2018-05-10-EN.torrent
-knoppix_iso := $(DOWNLOAD)/KNOPPIX_V8.2-2018-05-10-EN/KNOPPIX_V8.2-2018-05-10-EN.iso
+knoppix_torrent := http://torrent.unix-ag.uni-kl.de/torrents/KNOPPIX_V8.6.1-2019-10-14-EN.torrent
+knoppix_iso := $(DOWNLOAD)/KNOPPIX_V8.6.1-2019-10-14-EN/KNOPPIX_V8.6.1-2019-10-14-EN.iso
 $(knoppix_iso): | $(base)
 	aria2c --seed-time=0 --allow-overwrite=true -d $(DOWNLOAD) $(knoppix_torrent) # please seed separately
 knoppix_iso: $(knoppix_iso)
