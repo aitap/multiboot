@@ -35,7 +35,7 @@ sysrcd_arch := amd64
 sysrcd_iso := $(CONTENTS)/boot/sysrcd.iso
 $(sysrcd_iso): | $(base)
 	@echo "Additional parameters: sysrcd_arch=$(sysrcd_arch)"
-	$(call LOAD_LINK,https://www.system-rescue-cd.org/Download/,systemrescuecd-$(sysrcd_arch)-[\\d.]+\\.iso$$ systemrescuecd-$(sysrcd_arch)-[\\d.]+\\.iso,$(sysrcd_iso))
+	$(call LOAD_LINK,https://www.system-rescue.org/Download/,systemrescue-[\\d.]+-$(sysrcd_arch)\\.iso$$,$(sysrcd_iso))
 	touch $(sysrcd_iso)
 sysrcd_iso: $(sysrcd_iso)
 
