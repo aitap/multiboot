@@ -142,13 +142,19 @@ $(memtest): $(memtest_img) configs/memtest.cfg
 	cp configs/memtest.cfg $(CONTENTS)/boot/grub/memtest.cfg.in
 memtest: $(memtest)
 
-memtestplus_bin := $(DOWNLOAD)/memtest86+-5.01.bin.gz
+memtestplus_bin := $(DOWNLOAD)/mt86plus_7.20.binaries.zip
 $(memtestplus_bin): | $(base)
-	wget -O $(memtestplus_bin) http://www.memtest.org/download/5.01/memtest86+-5.01.bin.gz
+	wget -O $(memtestplus_bin) https://www.memtest.org/download/v7.20/mt86plus_7.20.binaries.zip
 
-memtestplus := $(CONTENTS)/boot/memtest86+.bin $(CONTENTS)/boot/grub/memtestplus.cfg.in
+memtestplus := \
+	$(CONTENTS)/boot/memtest32.bin $(CONTENTS)/boot/memtest64.bin \
+	$(CONTENTS)/boot/memtest32.efi $(CONTENTS)/boot/memtest64.efi \
+	$(CONTENTS)/boot/grub/memtestplus.cfg.in
 $(memtestplus): $(memtestplus_bin) configs/memtestplus.cfg
-	zcat $(memtestplus_bin) > $(CONTENTS)/boot/memtest86+.bin
+	7z e -so $(memtestplus_bin) memtest32.bin > $(CONTENTS)/boot/memtest32.bin
+	7z e -so $(memtestplus_bin) memtest64.bin > $(CONTENTS)/boot/memtest64.bin
+	7z e -so $(memtestplus_bin) memtest32.efi > $(CONTENTS)/boot/memtest32.efi
+	7z e -so $(memtestplus_bin) memtest64.efi > $(CONTENTS)/boot/memtest64.efi
 	cp configs/memtestplus.cfg $(CONTENTS)/boot/grub/memtestplus.cfg.in
 memtestplus: $(memtestplus)
 
